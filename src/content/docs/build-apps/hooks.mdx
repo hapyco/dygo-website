@@ -1,0 +1,76 @@
+---
+title: Record Hooks
+description: Add transactional Record lifecycle behavior with compiled Go code.
+---
+
+Record Hooks add App behavior to the Record lifecycle. Hook code compiles into the project runner. dygo does not load Go source files at runtime.
+
+## Generate a Hook
+
+```sh title="Terminal"
+dygo generate hook crm/contact
+```
+
+The command creates `apps/crm/entities/contact/hooks.go` and updates the generated project runner.
+
+## Register behavior
+
+```go title="apps/crm/entities/contact/hooks.go"
+package hooks
+
+import (
+    "context"
+
+    "github.com/hapyco/dygo/pkg/dygo"
+)
+
+func Register(registry dygo.RecordHookRegistry) error {
+    return registry.RegisterEntity(
+        "crm",
+        "contact",
+        dygo.RecordBeforeCreate,
+        "normalize-contact",
+        normalizeContact,
+    )
+}
+
+func normalizeContact(ctx context.Context, hook dygo.RecordHook) error {
+    return nil
+}
+```
+
+Register by App and Entity identity. Do not use the route slug.
+
+## Transaction contract
+
+Hooks run synchronously inside the current Record transaction. If a Hook returns an error, dygo rolls back the target operation.
+
+Use `hook.Input` in `before-validate`, `before-create`, and `before-update` when the Hook must change the current input.
+
+Use `hook.Records` for related Record reads and writes:
+
+```go
+record, err := hook.Records.Get(ctx, "crm", "contact", 42)
+created, err := hook.Records.Create(ctx, "crm", "activity", input)
+```
+
+These calls use metadata-backed Record storage and participate in the same transaction.
+
+## External side effects
+
+Avoid sending email or calling an external API from a transactional Hook. dygo does not have after-commit Hooks yet. A later database rollback cannot undo an external request.
+
+Use a durable [Job](/background/jobs-and-workers/) when work can happen after the transaction.
+
+## Validate runner wiring
+
+```sh title="Terminal"
+dygo hook validate
+dygo hook list
+```
+
+If App packages changed, sync the generated runner:
+
+```sh title="Terminal"
+dygo hook sync
+```

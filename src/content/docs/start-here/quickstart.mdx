@@ -1,0 +1,89 @@
+---
+title: Quickstart
+description: Create a dygo project, prepare PostgreSQL, create the first Administrator, and open Studio.
+sidebar:
+  order: 1
+---
+
+dygo is in early framework development. APIs and file formats can change before the first stable release.
+
+This guide creates a project, prepares its database, creates the first Administrator, and starts Studio.
+
+## Before you start
+
+You need:
+
+- PostgreSQL
+- a dygo release binary
+- Git
+
+The installer reads release assets from GitHub. If the project has no public release for your platform, build from the framework repository instead.
+
+## Install dygo
+
+The `dygo.dev/install` endpoint is planned but is not wired yet. Use the repository-hosted installer:
+
+```sh title="Terminal"
+curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | sh
+```
+
+Confirm that the binary is available:
+
+```sh title="Terminal"
+dygo version
+```
+
+See [Installation](/start-here/installation/) for Windows and custom install paths.
+
+## Create the project
+
+Generate a new project and enter its directory:
+
+```sh title="Terminal"
+dygo new my-system
+cd my-system
+```
+
+The project has its own App directory, configuration, database snapshot, and compiled runner.
+
+## Prepare PostgreSQL
+
+Run the repeatable environment preparation command:
+
+```sh title="Terminal"
+dygo db prepare
+```
+
+This command creates the configured database when it is missing. It then applies metadata migration, access metadata, and Fixtures.
+
+## Create the Administrator
+
+Bootstrap the first Administrator:
+
+```sh title="Terminal"
+dygo setup
+```
+
+The setup command owns initial credentials. Do not add a shared Administrator to a Fixture file.
+
+## Start the development server
+
+```sh title="Terminal"
+dygo dev
+```
+
+Open [http://localhost:6790/](http://localhost:6790/). Sign in with the Administrator account that you created.
+
+## Check the project
+
+Use `doctor` when setup fails or when the project shape changes:
+
+```sh title="Terminal"
+dygo doctor
+```
+
+It checks project configuration, PostgreSQL, metadata, access files, Fixtures, Hook and Job wiring, Studio assets, and initial setup state.
+
+## Next step
+
+Read [Core concepts](/start-here/core-concepts/) before you define the first business App. Then follow [Entities](/build-apps/entities/) to create a metadata-backed Record type.

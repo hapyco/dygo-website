@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" role="img" aria-labelledby="title">
+  <title id="title">dygo mark</title>
+  <rect width="44" height="44" rx="10" fill="#0a0d14"/>
+  <path d="M10 12h10c8 0 14 4 14 10s-6 10-14 10H10V12Z" fill="none" stroke="#8da2ff" stroke-width="4"/>
+  <path d="M18 18h6l5 4-5 4h-6" fill="none" stroke="#f1f4f8" stroke-width="3" stroke-linecap="square"/>
+</svg>

@@ -1,0 +1,118 @@
+---
+title: CLI reference
+description: Find the current dygo project, metadata, database, runtime, Job, and secret commands.
+---
+
+dygo commands use `development` by default. Write commands that benefit from review print a plan and prompt. Use `--dry-run` to preview and `--yes` for a reviewed non-interactive run.
+
+## Project
+
+| Command | Purpose |
+| --- | --- |
+| `dygo new <name>` | Create a project. |
+| `dygo upgrade` | Update managed project files and Studio assets. |
+| `dygo version` | Print the binary version. |
+| `dygo doctor` | Diagnose project readiness. |
+| `dygo setup` | Create the first Administrator. |
+| `dygo dev` | Run the local server and Studio development path. |
+| `dygo serve` | Run the HTTP server. |
+| `dygo worker` | Process Jobs and due Schedules. |
+
+## Generate
+
+`dygo g` is an alias for `dygo generate`.
+
+| Command | Purpose |
+| --- | --- |
+| `dygo generate app <app>` | Create an App skeleton. |
+| `dygo generate entity <app>/<entity>` | Create a standard Entity bundle. |
+| `dygo generate collection <app>/<collection>` | Create collection-row metadata. |
+| `dygo generate hook <app>/<entity>` | Add Hook code and runner wiring. |
+| `dygo generate job <app>/<job>` | Add Job metadata, handler code, and runner wiring. |
+| `dygo generate fixture <app>/<entity>` | Add a Fixture skeleton. |
+| `dygo generate test <app>/<entity>` | Add Go test boilerplate. |
+
+Generators support `--dry-run`. They do not overwrite custom files. `--force` can replace files that dygo identifies as generated.
+
+## Validate and inspect
+
+```sh title="Terminal"
+dygo app list
+dygo app validate
+
+dygo entity list
+dygo entity validate
+dygo entity show crm/contact
+dygo entity graph crm
+
+dygo route list
+dygo route validate
+dygo route resolve GET /contact/example
+
+dygo hook list
+dygo hook validate
+dygo hook sync
+```
+
+## Database
+
+| Command | Purpose |
+| --- | --- |
+| `dygo db check` | Check PostgreSQL connectivity. |
+| `dygo db create` | Create the configured database. |
+| `dygo db prepare` | Create when missing, then migrate, apply access, and apply Fixtures. |
+| `dygo db migrate` | Apply Patches and safe metadata schema changes. |
+| `dygo db prune` | Remove approved metadata-orphaned objects. |
+| `dygo db reset` | Drop and rebuild the configured database. |
+| `dygo db drop` | Drop the configured database. |
+
+`drop`, `reset`, and `prune` can destroy data. Protected environments require `--force` for destructive commands.
+
+## Access and Fixtures
+
+```sh title="Terminal"
+dygo access validate
+dygo access apply
+dygo access list
+dygo access roles
+
+dygo fixture validate
+dygo fixture apply
+dygo fixture export crm/contact
+```
+
+## Jobs
+
+```sh title="Terminal"
+dygo job list
+dygo job show crm/send-welcome-email
+dygo job disable crm/send-welcome-email
+dygo job enable crm/send-welcome-email
+
+dygo job execution run crm/send-welcome-email --payload '{}'
+dygo job execution list
+dygo job execution show <id-or-name>
+dygo job execution cancel <id-or-name>
+dygo job execution retry <id-or-name> --idempotency-key <key>
+```
+
+`dygo job exec` is a short alias for `dygo job execution`.
+
+## Secrets
+
+```sh title="Terminal"
+dygo secret init
+dygo secret edit
+dygo secret get DATABASE_URL
+dygo secret validate
+dygo secret rotate-key
+```
+
+## Shell completion
+
+```sh title="Terminal"
+dygo completion bash
+dygo completion zsh
+dygo completion fish
+dygo completion powershell
+```

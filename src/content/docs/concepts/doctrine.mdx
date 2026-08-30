@@ -1,0 +1,48 @@
+---
+title: Doctrine
+description: The product and engineering principles behind dygo's framework defaults.
+---
+
+dygo is an opinionated Go framework for business software. Its job is to make the safe path clear: define business metadata and behavior, then let the framework handle the platform foundation.
+
+## Speed needs structure
+
+Coding agents and generators can move fast. Business systems still need stable data models, permissions, observable behavior, and repeatable operations.
+
+## Builders write business logic
+
+Apps define Entities, Records, access policy, Hooks, Fixtures, Jobs, Schedules, and business rules. dygo owns the repeated platform pieces.
+
+## Opinion saves decisions
+
+File layout, CLI workflows, metadata shape, schema sync, App discovery, and runtime behavior use conventions. Escape paths must solve a real business need.
+
+## Metadata stays readable
+
+App manifests, Entity files, access policy, Fixtures, Jobs, and Schedules must remain clear to people and coding agents.
+
+Metadata drives behavior. It must not hide that behavior.
+
+## Permissions come early
+
+Server-side checks are the source of truth. Interface checks help the user, but they do not protect data.
+
+## Important behavior stays visible
+
+Database changes, Jobs, permission denials, runtime failures, and business actions need logs, Activity, health checks, or Studio surfaces.
+
+## Studio is product UI
+
+Studio is where people run the business. Shared metadata-driven screens still need consistent interaction and clear language.
+
+## Enterprise does not mean bloated
+
+Add a framework layer when it removes repeated complexity. Keep strong primitives. Avoid abstractions that do not carry product weight.
+
+## Agents are first-class builders
+
+Commands, files, output, documentation, and tests must be predictable enough that an agent can make a correct change without inventing architecture.
+
+## North star
+
+Use agentic coding for speed. Use dygo for structure. Build software that is fast to create, safe to run, and clear enough to change.

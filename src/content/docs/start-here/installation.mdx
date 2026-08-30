@@ -1,0 +1,61 @@
+---
+title: Installation
+description: Install or update the dygo release binary on macOS, Linux, or Windows.
+sidebar:
+  order: 2
+---
+
+dygo release binaries are distributed through GitHub Releases. The installer downloads the archive for the current platform and verifies its SHA-256 checksum.
+
+:::caution[Release status]
+dygo is in early development. The installer needs a published GitHub Release for your platform. Do not assume that a stable release exists.
+:::
+
+## macOS and Linux
+
+Use the repository-hosted installer while `https://dygo.dev/install` is being wired:
+
+```sh title="Terminal"
+curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | sh
+```
+
+The managed binary goes to `~/.dygo/bin`. If that directory is not on `PATH`, the installer prints the shell profile line to add.
+
+## Windows PowerShell
+
+```powershell title="PowerShell"
+irm https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.ps1 | iex
+```
+
+## Install a specific version
+
+Set `DYGO_VERSION` before the shell runs the installer:
+
+```sh title="Terminal"
+curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | DYGO_VERSION=v0.1.0 sh
+```
+
+Replace `v0.1.0` with an available release tag.
+
+## Use a custom install directory
+
+```sh title="Terminal"
+curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | DYGO_INSTALL_DIR=/usr/local/bin sh
+```
+
+## Update the binary
+
+Run the installer again to update the binary. Then update a generated project:
+
+```sh title="Terminal"
+dygo upgrade --check
+dygo upgrade
+```
+
+`dygo upgrade` updates the dygo dependency, managed runner files, and cached Studio assets. It refuses to update a dirty Git worktree.
+
+Preview an update without writing files:
+
+```sh title="Terminal"
+dygo upgrade --dry-run
+```

@@ -1,0 +1,60 @@
+---
+title: Record API
+description: Understand the generic authenticated HTTP routes for metadata-backed Records.
+---
+
+The Record API operates on Entity metadata stored in Core. It supports normal routeable Entities and parent-owned collection rows.
+
+All Record routes require a valid session. The server checks the effective Entity permission for the current User before it reads or writes business data.
+
+## Route identity
+
+The API route uses the Entity route slug. Internal App code uses App and Entity identity.
+
+```text
+GET    /api/v1/records/:entity
+POST   /api/v1/records/:entity
+GET    /api/v1/records/:entity/:name
+PATCH  /api/v1/records/:entity/:name
+DELETE /api/v1/records/:entity/:name
+```
+
+The `:name` value is the stable Record name. It is not the internal numeric `id`.
+
+## Current operations
+
+The API supports:
+
+- list Records
+- read one Record
+- create a Record
+- update a Record
+- delete a Record
+- read and write Single Entity state
+- read Record Activity
+- write parent-owned collection rows through the parent Record
+
+## Hooks and transactions
+
+Create, update, and delete operations run the applicable Record Hooks in the same database transaction. A Hook error aborts the request and rolls back the write.
+
+## Permission actions
+
+The server maps Record operations to current base actions:
+
+- `read`
+- `create`
+- `update`
+- `delete`
+- `export`
+- `print`
+
+Row-level and Field-level access rules are not part of the current API.
+
+## Activity
+
+Activity is append-only product history for a Record. It is not a compliance audit system.
+
+## App code
+
+Compiled App Hooks and Jobs use the public `pkg/dygo` Record interface. That server-side App path uses App and Entity identity and does not re-enter normal HTTP permission checks.

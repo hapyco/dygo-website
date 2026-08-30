@@ -1,0 +1,101 @@
+---
+title: Jobs and Workers
+description: Define compiled background Jobs and run durable Job Executions through PostgreSQL-backed Workers.
+---
+
+A Job is app-defined background work. A Job Execution is one durable queued occurrence. A Worker claims Job Executions from PostgreSQL and runs compiled Go handlers.
+
+## Generate a Job
+
+```sh title="Terminal"
+dygo generate job crm/send-welcome-email
+```
+
+The generator creates:
+
+```text
+apps/crm/jobs/send-welcome-email/
+├── job.yml
+└── run.go
+```
+
+It also updates the generated project runner.
+
+## Define Job metadata
+
+```yaml title="job.yml"
+label: Send Welcome Email
+description: Sends the first welcome email to a contact.
+queue: default
+timeout: 30s
+retry:
+  attempts: 3
+  initial-delay: 10s
+  max-delay: 5m
+```
+
+The Job key comes from the bundle directory. Payloads are JSON. The handler validates the business shape.
+
+## Write the handler
+
+```go title="run.go"
+package job
+
+import (
+    "context"
+
+    "github.com/hapyco/dygo/pkg/dygo"
+)
+
+func Run(ctx context.Context, job dygo.JobExecution) error {
+    return nil
+}
+```
+
+Job handlers compile into the project runner. dygo does not load them dynamically.
+
+## Queue an execution
+
+```sh title="Terminal"
+dygo job execution run crm/send-welcome-email --payload '{"contact":42}'
+```
+
+The command queues work. It does not run the handler inline.
+
+Use an idempotency key when the same upstream event can be delivered more than once:
+
+```sh title="Terminal"
+dygo job execution run crm/send-welcome-email \
+  --payload '{"contact":42}' \
+  --idempotency-key 'welcome:contact:42'
+```
+
+dygo enforces uniqueness by Job and idempotency key.
+
+## Run Workers
+
+Start all configured queues:
+
+```sh title="Terminal"
+dygo worker
+```
+
+Process one available batch and exit:
+
+```sh title="Terminal"
+dygo worker --once
+```
+
+Production systems that use Jobs must run `dygo serve` and `dygo worker` as separate long-running processes.
+
+## Inspect work
+
+```sh title="Terminal"
+dygo job list
+dygo job execution list
+dygo job execution show <id-or-name>
+```
+
+Current Jobs support durable status, retry, timeouts, priorities, delayed execution, cancellation of queued work, and recovery of expired locks.
+
+Queue rate limits, retention policy, and dead-letter handling are planned.

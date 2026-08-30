@@ -1,0 +1,73 @@
+---
+title: App model
+description: Organize business metadata and compiled behavior in a dygo App.
+---
+
+An App is the deployment and ownership boundary for business behavior.
+
+Apps live under `apps/<app>` in a generated project. Each App has a manifest and can own Entities, access policy, Fixtures, Hooks, Jobs, Schedules, and Patches.
+
+## Create an App
+
+```sh title="Terminal"
+dygo generate app crm
+```
+
+The generator creates valid starter files. It does not overwrite custom files.
+
+Preview the change first:
+
+```sh title="Terminal"
+dygo generate app crm --dry-run
+```
+
+## App directory
+
+```text title="Project files"
+apps/
+└── crm/
+    ├── app.yml
+    ├── access/
+    │   └── _roles.yml
+    ├── entities/
+    └── jobs/
+        └── _schedules.yml
+```
+
+As the App grows, each Entity gets its own bundle:
+
+```text title="Entity bundle"
+apps/crm/entities/contact/
+├── contact.entity.yml
+├── fixtures.yml
+├── hooks.go
+└── hooks_test.go
+```
+
+## Manifest
+
+`app.yml` identifies the App and its metadata directories. App identity comes from the manifest, not its display label.
+
+Validate all discovered Apps:
+
+```sh title="Terminal"
+dygo app validate
+```
+
+List the Apps that dygo can see:
+
+```sh title="Terminal"
+dygo app list
+```
+
+## Ownership rule
+
+Put business rules in the App that owns them. Use dygo for shared platform capability such as Record storage, permissions, background work, secrets, and Studio rendering.
+
+App code must use the public packages under `pkg/dygo`. Framework implementation under `internal/` is not a stable App API.
+
+## Built-in Apps
+
+Core is the required system App. Studio is the first-party interface App. A generated project also contains its own business Apps.
+
+Core and business Apps use the same metadata model where practical. Framework bootstrap can use narrow exceptions, but it must not create a private product capability that Apps cannot reach.

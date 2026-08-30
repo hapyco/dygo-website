@@ -1,0 +1,57 @@
+---
+title: Fixtures
+description: Define repeatable app-owned Records for setup, demos, and development data.
+---
+
+Fixtures define repeatable Records owned by an App. Use them for required reference data, setup data, and bounded development examples.
+
+## Generate a Fixture file
+
+```sh title="Terminal"
+dygo generate fixture crm/contact
+```
+
+The file lives with the Entity bundle:
+
+```text
+apps/crm/entities/contact/fixtures.yml
+```
+
+## Validate Fixtures
+
+```sh title="Terminal"
+dygo fixture validate
+```
+
+Validation checks Entity identity, Fields, match rules, dependencies, and Record references.
+
+## Preview the apply plan
+
+```sh title="Terminal"
+dygo fixture apply --dry-run
+```
+
+Apply after you review the plan:
+
+```sh title="Terminal"
+dygo fixture apply
+```
+
+Fixture application is part of `dygo db prepare`.
+
+## Keep credentials out
+
+Do not seed a shared Administrator password. `dygo setup` owns the first Administrator account.
+
+Do not put secret values in Fixtures. Use [encrypted secrets](/run/secrets/) for environment credentials.
+
+## Export bounded data
+
+Export selected Records to a Fixture file:
+
+```sh title="Terminal"
+dygo fixture export crm/contact --dry-run
+dygo fixture export crm/contact
+```
+
+Use `--include-links` when the export must include linked Fixture dependencies.

@@ -1,0 +1,144 @@
+---
+title: Entities
+description: Define business Records, Fields, naming, links, collections, indexes, and constraints in YAML.
+---
+
+An Entity defines the structure of a business Record. dygo reads Entity YAML during validation and database migration. Studio and the generic Record API use the persisted metadata.
+
+## Generate an Entity
+
+```sh title="Terminal"
+dygo generate entity crm/contact
+```
+
+The standard generator creates Entity metadata, access metadata, a Fixture skeleton, Hook scaffolding, a test file, and project runner wiring.
+
+Skip parts that the Entity does not need:
+
+```sh title="Terminal"
+dygo generate entity crm/contact --no-hook --no-fixture --no-test
+```
+
+## Define the metadata
+
+Edit `apps/crm/entities/contact/contact.entity.yml`:
+
+```yaml title="apps/crm/entities/contact/contact.entity.yml"
+label: Contact
+description: A person known to the CRM
+icon: user
+route:
+  slug: contact
+name:
+  strategy: format
+  format: "{email}"
+fields:
+  - name: full-name
+    label: Full Name
+    type: text
+    required: true
+
+  - name: email
+    label: Email
+    type: email
+    required: true
+    unique: true
+
+  - name: status
+    label: Status
+    type: select
+    index: true
+    options:
+      values:
+        - Lead
+        - Customer
+        - Archived
+```
+
+Entity and Field keys use kebab-case. The parent directory defines Entity identity. The top-level `name` section defines Record naming.
+
+## Record identity
+
+Every Record has:
+
+- `id`, the internal numeric primary key
+- `name`, the stable system or business identifier
+- `created-at`
+- `updated-at`
+
+Normal Entities support `random`, `manual`, `format`, and `series` naming strategies.
+
+Use a series for ordered business identifiers:
+
+```yaml title="invoice.entity.yml"
+name:
+  strategy: series
+  pattern: "SINV-{YYYY}-{MM}-{#####}"
+```
+
+Changing a Field used by `format` naming does not rename an existing Record.
+
+## Links
+
+A `link` Field points to a Record from another Entity:
+
+```yaml title="invoice.entity.yml"
+fields:
+  - name: customer
+    label: Customer
+    type: link
+    required: true
+    options:
+      entity: customer
+```
+
+Set `options.app` for a cross-App link or an ambiguous Entity key.
+
+## Collections
+
+Collections store parent-owned rows such as invoice items. Define collection metadata under `entities/_collections/` and reference it from the parent:
+
+```yaml title="invoice.entity.yml"
+fields:
+  - name: items
+    label: Items
+    type: collection
+    options:
+      entity: invoice-item
+```
+
+Collection rows are not routeable Records. dygo deletes them in the parent transaction when it deletes the parent Record.
+
+## Indexes and constraints
+
+Use Field shorthands for a single Field:
+
+```yaml
+fields:
+  - name: email
+    label: Email
+    type: email
+    unique: true
+```
+
+Use top-level metadata for composite rules:
+
+```yaml
+indexes:
+  - name: by-company-status
+    fields: [company, status]
+
+constraints:
+  - type: unique
+    fields: [company, external-id]
+```
+
+## Validate before migration
+
+```sh title="Terminal"
+dygo entity validate
+dygo entity show crm/contact
+dygo entity graph crm
+```
+
+Validation checks file identity, Field types, links, collections, route conflicts, and Hook conventions before PostgreSQL changes.

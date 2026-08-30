@@ -1,0 +1,72 @@
+---
+title: Access and permissions
+description: Define global roles and flat Entity permissions in app-owned YAML.
+---
+
+Access metadata defines which roles can act on an Entity. The server reads effective grants from Core Records and enforces them for Record routes.
+
+Current access is flat. It supports Entity actions. Row rules and Field rules are planned.
+
+## Define a role
+
+Add App-contributed global roles to `apps/crm/access/_roles.yml`:
+
+```yaml title="apps/crm/access/_roles.yml"
+roles:
+  - name: sales-agent
+    label: Sales Agent
+    description: Works with CRM contacts and opportunities.
+```
+
+Role names are global and must be unique across Apps.
+
+## Define an Entity policy
+
+Create `apps/crm/access/contact.access.yml`:
+
+```yaml title="apps/crm/access/contact.access.yml"
+policy:
+  - role: sales-agent
+    can:
+      - read
+      - create
+      - update
+      - export
+      - print
+```
+
+Current base actions are `read`, `create`, `update`, `delete`, `export`, and `print`.
+
+## Validate and apply
+
+```sh title="Terminal"
+dygo access validate
+dygo access apply
+```
+
+`access apply` resolves the file contributions and creates or updates the effective Role and permission Records. It does not assign Users to roles.
+
+`dygo db prepare` runs `access apply` as part of environment preparation. `dygo db migrate` does not apply access metadata by itself.
+
+## Assign users
+
+User-role assignment is runtime data. Manage it through setup, Studio, an admin path, or an explicit environment Fixture.
+
+The Administrator flag is separate from normal roles.
+
+## Conflict rules
+
+Two Apps cannot define the same role name. Two policy files cannot define the same Entity and role grant unless one contribution explicitly replaces the other with `override: true`.
+
+dygo rejects unresolved conflicts. It does not use App order or last-writer-wins behavior.
+
+## Current boundary
+
+The current permission engine does not provide:
+
+- row ownership or sharing
+- row filters
+- Field-level grants
+- workflow-specific actions
+
+Keep those rules in server-side App behavior until the framework has a supported metadata contract for them.

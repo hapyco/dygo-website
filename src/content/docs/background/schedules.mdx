@@ -1,0 +1,34 @@
+---
+title: Schedules
+description: Create recurring Job Executions from app-owned cron metadata.
+---
+
+A Schedule creates a normal Job Execution when its cron expression becomes due. Workers check Schedules and enqueue the corresponding Job with a stable occurrence key.
+
+## File location
+
+App Schedules live in:
+
+```text
+apps/<app>/jobs/_schedules.yml
+```
+
+## Runtime rule
+
+Run a Worker process for Schedules to fire:
+
+```sh title="Terminal"
+dygo worker
+```
+
+`dygo serve` does not process due Schedules.
+
+## Durable execution
+
+Schedule occurrences use the same Job Execution model as manually queued work. This keeps payloads, status, attempts, errors, and timing in one operating path.
+
+The occurrence idempotency key includes the App, Schedule name, and due time. Rechecking the same due occurrence does not create duplicate work.
+
+## Current boundary
+
+Schedules are file-owned metadata. Specialized Studio Schedule management screens are planned.

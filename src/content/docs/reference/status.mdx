@@ -1,0 +1,51 @@
+---
+title: Framework status
+description: See which dygo capabilities exist now and which ones remain planned.
+---
+
+dygo is in early framework development. APIs, commands, and file formats can change before the first stable release.
+
+## Current
+
+The current framework includes:
+
+- project generation and upgrade support
+- App and Entity metadata
+- metadata validation and route inspection
+- PostgreSQL schema sync and explicit Patches
+- generic authenticated Record APIs
+- session login and one-Administrator bootstrap
+- flat role-based Entity permissions
+- app-owned Fixtures
+- compiled transactional Record Hooks
+- durable PostgreSQL-backed Jobs
+- Workers, retries, timeouts, and expired-lock recovery
+- recurring App Schedules
+- encrypted project secret files
+- first-party Studio login, navigation, Record lists, forms, details, and Activity
+
+## Planned
+
+The following capabilities are not shipped:
+
+- Workflow actions, approvals, and state transitions
+- row-level sharing and ownership rules
+- Field-level permissions
+- saved Views
+- custom Studio Pages
+- Reports and dashboards
+- specialized Studio Job and Schedule screens
+- OAuth, SSO, API keys, invitations, and password recovery
+- compliance audit controls
+- automatic production backups
+- external queue backends
+- queue rate limits, retention policy, and dead-letter handling
+- dynamic Go Hook loading
+
+## Installation status
+
+The intended public installer is `https://dygo.dev/install`, but that endpoint is not wired. The current repository-hosted installer reads GitHub Release assets. It needs a published release for the current platform.
+
+## Documentation rule
+
+Pages in this site describe current behavior unless a section says **planned**, **proposed**, or **coming soon**. If source code and an older design note disagree, current runtime behavior wins.

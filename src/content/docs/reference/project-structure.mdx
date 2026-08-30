@@ -1,0 +1,60 @@
+---
+title: Project structure
+description: See where dygo metadata, Go behavior, configuration, generated files, and local state live.
+---
+
+```text title="Generated project"
+my-system/
+├── dygo.yml
+├── cmd/
+│   └── dygo/
+│       └── main.go
+├── apps/
+│   └── <app>/
+│       ├── app.yml
+│       ├── access/
+│       │   ├── _roles.yml
+│       │   └── <entity>.access.yml
+│       ├── entities/
+│       │   ├── <entity>/
+│       │   │   ├── <entity>.entity.yml
+│       │   │   ├── fixtures.yml
+│       │   │   └── hooks.go
+│       │   └── _collections/
+│       └── jobs/
+│           ├── <job>/
+│           │   ├── job.yml
+│           │   └── run.go
+│           └── _schedules.yml
+├── config/
+│   ├── queues.yml
+│   └── secrets/
+├── db/
+│   └── schema.sql
+└── .dygo/
+    ├── apps/
+    ├── files/
+    ├── logs/
+    ├── secrets/
+    └── tmp/
+```
+
+## Developer-owned source
+
+Business metadata and Go behavior live under `apps/`. The application owns these files.
+
+`cmd/dygo/main.go` is the project runner. Generators wire compiled Hook and Job packages into it.
+
+## Generated and managed files
+
+`db/schema.sql` records the PostgreSQL schema snapshot after migration.
+
+`.dygo/apps/studio` caches the first-party Studio assets shipped with the running dygo version.
+
+## Local private state
+
+`.dygo/secrets/master.key` is private. Keep it out of Git. The `.dygo` directory also stores local files, logs, and temporary data.
+
+## Framework boundary
+
+App code imports public packages under `pkg/dygo`. Code under the framework `internal/` directory can change without an App compatibility promise.

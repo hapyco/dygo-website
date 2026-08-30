@@ -1,0 +1,74 @@
+---
+title: Core concepts
+description: Learn how Apps, Entities, Records, Hooks, Jobs, and Studio fit together in dygo.
+sidebar:
+  order: 3
+---
+
+dygo gives business software one predictable shape. Apps own the business. The framework owns the repeated platform work.
+
+## The system model
+
+```text title="dygo architecture"
+App YAML and compiled Go behavior
+              │
+              ▼
+     discovery and validation
+              │
+              ▼
+   Core metadata in PostgreSQL
+              │
+      ┌───────┼─────────┐
+      ▼       ▼         ▼
+ Record API  Workers   Studio
+```
+
+YAML metadata remains the source of truth. PostgreSQL stores runtime metadata and business Records. Go code supplies business behavior that needs a compiled, testable boundary.
+
+## App
+
+An App is a business module. It owns Entities, access metadata, Fixtures, Hooks, Jobs, Schedules, and explicit Patches.
+
+Business-specific behavior belongs in Apps. Reusable platform behavior belongs in dygo.
+
+## Entity and Record
+
+An Entity defines one business object, such as `contact`, `invoice`, or `shipment`. Its YAML file describes Fields, links, collections, indexes, constraints, route identity, and Record naming.
+
+A Record is saved business data for an Entity. Every Record has an internal numeric `id`, a stable business `name`, and timestamps.
+
+## Core
+
+Core is the required system App. It stores framework metadata and operating Records such as Users, Roles, permissions, Jobs, Job Executions, and Activity.
+
+Core uses the same Entity model as a business App. Bootstrap-only behavior stays narrow.
+
+## Studio
+
+Studio is the first-party operational interface. It reads metadata and renders navigation, Record lists, forms, details, and Activity.
+
+Studio is not a generic admin template. It is the shared product surface for people who run the business.
+
+## Record Hook
+
+A Record Hook is compiled Go code that runs inside a Record transaction. Hooks can normalize input, enforce business rules, and update related Records.
+
+If a Hook returns an error, dygo rolls back the current operation.
+
+## Job, Worker, and Schedule
+
+A Job defines durable background work. A Job Execution is one queued occurrence. A Worker claims Job Executions from PostgreSQL and handles retry, timeouts, and expired locks.
+
+A Schedule creates normal Job Executions from app-owned cron metadata.
+
+## The project loop
+
+```sh title="Terminal"
+dygo generate app crm
+dygo generate entity crm/contact
+dygo db prepare
+dygo setup
+dygo dev
+```
+
+The commands can change as the framework develops. The loop should remain small: define metadata, prepare app state, run Studio, and write business behavior inside the App.

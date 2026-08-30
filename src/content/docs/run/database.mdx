@@ -1,0 +1,83 @@
+---
+title: Database
+description: Prepare PostgreSQL, apply safe metadata changes, and handle unsafe changes with explicit Patches.
+---
+
+dygo uses PostgreSQL for framework metadata, business Records, Activity, Jobs, and Schedules.
+
+Entity YAML is the schema source of truth. dygo plans database changes from metadata and stores a snapshot in `db/schema.sql`.
+
+## Check the connection
+
+```sh title="Terminal"
+dygo db check
+```
+
+Commands use `development` by default. Set `--env staging` or `--env production` when you need another configured environment.
+
+## Prepare an environment
+
+```sh title="Terminal"
+dygo db prepare
+```
+
+`prepare` creates the database when it is missing. It then runs migration, applies access metadata, and applies Fixtures.
+
+Use `--dry-run` to inspect the plan:
+
+```sh title="Terminal"
+dygo db prepare --dry-run
+```
+
+## Apply metadata changes
+
+```sh title="Terminal"
+dygo db migrate
+```
+
+Migration applies pre-sync Patches, safe metadata schema changes, post-sync Patches, and a new schema snapshot.
+
+dygo migration is additive. It does not infer unsafe operations such as table drops, Field renames, type conversions, or data backfills.
+
+## Use explicit Patches
+
+Put an unsafe lifecycle change in an App-owned Patch. The Patch defines the order around metadata sync and keeps the decision in source control.
+
+Use Patches for:
+
+- Entity or Field renames
+- destructive type changes
+- data backfills
+- transitions that need custom SQL or Go behavior
+
+## Remove orphaned schema
+
+`db prune` is the explicit destructive cleanup path for objects that no longer exist in metadata.
+
+Review the plan first:
+
+```sh title="Terminal"
+dygo db prune --dry-run
+```
+
+Then run the guarded command:
+
+```sh title="Terminal"
+dygo db prune
+```
+
+## Reset development
+
+:::danger[Destructive command]
+`dygo db reset` drops the configured database and rebuilds it. Use it only when losing that environment is acceptable.
+:::
+
+```sh title="Terminal"
+dygo db reset
+```
+
+Protected environments block destructive commands unless you pass `--force`.
+
+## Backups
+
+dygo does not provide automated production backups. Configure PostgreSQL backup and restore procedures outside the framework before you run production data.

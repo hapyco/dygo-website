@@ -1,0 +1,60 @@
+---
+title: Server and Studio
+description: Run dygo locally, serve the HTTP API, authenticate users, and open the metadata-driven Studio.
+---
+
+dygo separates web serving from background Job processing. Run `serve` for HTTP traffic and `worker` for Jobs and Schedules in production.
+
+## Local development
+
+```sh title="Terminal"
+dygo dev
+```
+
+The default local origin is `http://localhost:6790/`. In a framework source checkout, the command can start the Studio Vite server and proxy it through the same origin.
+
+## Serve HTTP
+
+```sh title="Terminal"
+dygo serve
+```
+
+The server includes:
+
+- a health endpoint
+- session login and logout
+- current-user identity
+- metadata APIs
+- generic Record CRUD routes
+- Activity for a Record
+- Studio asset delivery
+
+`dygo serve` does not process queued Job Executions.
+
+## Authentication
+
+`dygo setup` creates the first Administrator. Studio login creates a session and sends it in an HttpOnly cookie named `dygo_session`.
+
+Current authentication does not include OAuth, SSO, API keys, invitations, or password recovery.
+
+## Studio routes
+
+Studio is root-mounted:
+
+```text
+/login
+/
+/:entity
+/:entity/new
+/:entity/:name
+```
+
+The `:entity` segment is the globally unique route slug. It does not include the App name unless the App author chooses that slug.
+
+The `:name` segment is the Record system `name`, not its numeric `id`.
+
+## Current Studio surface
+
+Studio currently provides session login, App and Entity navigation, Record lists, Record forms, Record detail pages, and Record Activity.
+
+Specialized Job screens, Schedule screens, saved Views, custom Pages, and Reports are planned.
