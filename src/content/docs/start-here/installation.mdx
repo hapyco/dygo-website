@@ -13,10 +13,10 @@ dygo is in early development. The installer needs a published GitHub Release for
 
 ## macOS and Linux
 
-Use the repository-hosted installer while `https://dygo.dev/install` is being wired:
+Run the public installer:
 
 ```sh title="Terminal"
-curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | sh
+curl -fsSL https://dygo.dev/install | sh
 ```
 
 The managed binary goes to `~/.dygo/bin`. If that directory is not on `PATH`, the installer prints the shell profile line to add.
@@ -24,7 +24,7 @@ The managed binary goes to `~/.dygo/bin`. If that directory is not on `PATH`, th
 ## Windows PowerShell
 
 ```powershell title="PowerShell"
-irm https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.ps1 | iex
+irm https://dygo.dev/install.ps1 | iex
 ```
 
 ## Install a specific version
@@ -32,7 +32,7 @@ irm https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.ps1 | iex
 Set `DYGO_VERSION` before the shell runs the installer:
 
 ```sh title="Terminal"
-curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | DYGO_VERSION=v0.1.0 sh
+curl -fsSL https://dygo.dev/install | DYGO_VERSION=v0.1.0 sh
 ```
 
 Replace `v0.1.0` with an available release tag.
@@ -40,7 +40,7 @@ Replace `v0.1.0` with an available release tag.
 ## Use a custom install directory
 
 ```sh title="Terminal"
-curl -fsSL https://raw.githubusercontent.com/hapyco/dygo/main/scripts/install.sh | DYGO_INSTALL_DIR=/usr/local/bin sh
+curl -fsSL https://dygo.dev/install | DYGO_INSTALL_DIR=/usr/local/bin sh
 ```
 
 ## Update the binary
