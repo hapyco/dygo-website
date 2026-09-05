@@ -1,39 +1,37 @@
 <div class="editorial-home">
-  <main class="editorial-column">
-    <h1>Build serious business software without rebuilding the platform underneath it.</h1>
+  <div class="editorial-column">
+    <h1 id="_top">Build business software without rebuilding the foundation.</h1>
 
     <section class="editorial-section editorial-section--first" aria-labelledby="why-dygo">
-      <h2 id="why-dygo">Why dygo exists</h2>
+      <h2 id="why-dygo">The Go framework for business software</h2>
       <div class="editorial-prose">
-        <p>Business software carries data that people depend on. It needs permissions, stable schema changes, background work, operating history, secure configuration, and an interface that stays coherent as the system grows.</p>
-        <p>Teams rebuild that foundation for every product. Agentic coding makes the first version faster, but it also makes it easier to invent a new structure in every file and leave the hard operational work until later.</p>
-        <p>dygo gives the application a fixed shape. Builders define the business. The framework handles the repeated platform work.</p>
+        <p>Define your data and business logic. dygo provides PostgreSQL schema sync, permissions, background jobs, APIs, and Studio: a shared interface for working with your Records.</p>
       </div>
     </section>
 
     <section class="editorial-section" aria-labelledby="model">
-      <h2 id="model">The model</h2>
+      <h2 id="model">Define the business</h2>
       <div class="editorial-prose">
-        <p><strong>Apps</strong> own business modules. They contain Entities, access policy, Fixtures, Hooks, Jobs, Schedules, and explicit database Patches.</p>
-        <p><strong>Entities</strong> describe business Records in readable YAML. Fields, links, collections, indexes, constraints, route identity, and Record naming stay visible in source control.</p>
-        <p><strong>Go code</strong> owns behavior that needs a compiled boundary. Record Hooks run inside the transaction. Job handlers run through durable PostgreSQL-backed Job Executions.</p>
-        <p><strong>Studio</strong> reads the same metadata and renders the operating surface. People work with Records, forms, lists, and Activity without each App shipping a separate admin interface.</p>
+        <p><strong>Apps</strong> group your business modules. <strong>Entities</strong> define their data in YAML. <strong>Go</strong> handles Hooks and Jobs. <strong>Studio</strong> turns that metadata into forms, lists, and Record details.</p>
+        <p>Shared conventions give developers and coding agents a consistent structure to build on.</p>
       </div>
+      <p><a href="/start-here/core-concepts/">Explore the core concepts →</a></p>
     </section>
 
     <section class="editorial-section" aria-labelledby="foundation">
-      <h2 id="foundation">What the framework handles</h2>
-      <div class="editorial-prose">
-        <p><strong>Data.</strong> Metadata-driven PostgreSQL schema, stable Record identity, links, collections, indexes, constraints, and explicit Patches for unsafe changes.</p>
-        <p><strong>Access.</strong> Session authentication, one-Administrator bootstrap, global roles, and server-side Entity permissions for Record actions.</p>
-        <p><strong>Work.</strong> Transactional Record Hooks, durable Jobs, queue Workers, retry policy, timeouts, idempotency keys, and recurring Schedules.</p>
-        <p><strong>Operations.</strong> Health checks, encrypted project secrets, Activity history, diagnostic Logs, schema snapshots, and CLI diagnostics.</p>
-      </div>
+      <h2 id="foundation">Built in</h2>
+      <ul class="editorial-list">
+        <li><span>›</span> PostgreSQL schema sync and explicit database Patches</li>
+        <li><span>›</span> Authentication, roles, and Entity permissions</li>
+        <li><span>›</span> Record APIs and transactional Hooks</li>
+        <li><span>›</span> Durable Jobs, retries, and Schedules</li>
+        <li><span>›</span> Encrypted secrets, Activity history, and diagnostic Logs</li>
+      </ul>
     </section>
 
     <section class="editorial-section" aria-labelledby="loop">
-      <h2 id="loop">The basic loop</h2>
-      <p>Start a project, prepare PostgreSQL, create the first Administrator, and open Studio.</p>
+      <h2 id="loop">Start a project</h2>
+      <p>With dygo installed and PostgreSQL running:</p>
       <ol class="editorial-commands" aria-label="dygo quickstart commands">
         <li><span>›</span><code>dygo new my-system</code></li>
         <li><span>›</span><code>cd my-system</code></li>
@@ -41,62 +39,13 @@
         <li><span>›</span><code>dygo setup</code></li>
         <li><span>›</span><code>dygo dev</code></li>
       </ol>
-      <p><a href="/start-here/quickstart/">read the quickstart →</a></p>
-    </section>
-
-    <section class="editorial-section" aria-labelledby="principles">
-      <h2 id="principles">The opinions</h2>
-      <div class="editorial-prose">
-        <p><strong>Speed needs structure.</strong> Generators and coding agents can move quickly inside conventions that keep data, access, and operations predictable.</p>
-        <p><strong>Metadata must stay readable.</strong> Important behavior belongs in files that people and agents can inspect without reverse-engineering the runtime.</p>
-        <p><strong>Permissions come early.</strong> The server protects business data. Interface checks help the user, but they do not replace enforcement.</p>
-        <p><strong>Database danger stays explicit.</strong> Migration is additive. Renames, drops, type changes, and backfills move through reviewed Patches.</p>
-        <p><strong>Studio is product UI.</strong> Shared metadata-driven screens still need consistent language and interaction.</p>
-      </div>
-      <p><a href="/concepts/doctrine/">read the doctrine →</a></p>
+      <p><a href="/start-here/quickstart/">Follow the quickstart →</a></p>
     </section>
 
     <section class="editorial-section" aria-labelledby="current">
-      <h2 id="current">What exists today</h2>
-      <p>dygo is in early framework development. APIs and file formats can change before the first stable release.</p>
-      <ul class="editorial-list">
-        <li><span>›</span> project, App, Entity, Hook, Job, Fixture, and test generators</li>
-        <li><span>›</span> PostgreSQL schema sync and app-owned Patches</li>
-        <li><span>›</span> generic authenticated Record APIs</li>
-        <li><span>›</span> flat role-based Entity permissions</li>
-        <li><span>›</span> compiled transactional Record Hooks</li>
-        <li><span>›</span> durable Jobs, Workers, and Schedules</li>
-        <li><span>›</span> encrypted project secrets</li>
-        <li><span>›</span> Studio login, navigation, lists, forms, details, and Activity</li>
-      </ul>
-      <p><a href="/reference/status/">read the framework status →</a></p>
-    </section>
-
-    <section class="editorial-section" aria-labelledby="next">
-      <h2 id="next">Where it is going</h2>
-      <p>The metadata foundation will support more business behavior without changing the App model.</p>
-      <ul class="editorial-list editorial-list--planned">
-        <li><span>○</span> Workflow actions, approvals, and state transitions</li>
-        <li><span>○</span> row-level and Field-level access rules</li>
-        <li><span>○</span> saved Views, Reports, and custom Studio Pages</li>
-        <li><span>○</span> specialized Job and Schedule operating screens</li>
-        <li><span>○</span> OAuth, SSO, API keys, invitations, and password recovery</li>
-      </ul>
-    </section>
-
-    <section class="editorial-section" aria-labelledby="source">
-      <h2 id="source">Source available</h2>
-      <div class="editorial-prose">
-        <p>dygo is released under the O'Saasy License. You can use it, modify it, self-host it, and build business software with it. Competing hosted services where dygo itself is the primary value are reserved.</p>
-        <p>The framework is being built in public. Contributions to framework code are paused while the first stable shape is being established. Documentation and website contributions are welcome.</p>
-      </div>
-      <p><a href="https://github.com/hapyco/dygo">view the source on GitHub →</a></p>
-    </section>
-
-    <section class="editorial-section editorial-closing" aria-labelledby="start">
-      <h2 id="start">Start with one Entity</h2>
-      <p>Define one useful business Record. Prepare the database. Open it in Studio. Add behavior only when the business needs it.</p>
-      <p><a href="/build-apps/entities/">define an Entity →</a></p>
+      <h2 id="current">Early development. Source available.</h2>
+      <p>APIs and file formats can change before the first stable release. dygo uses the O'Saasy License.</p>
+      <p><a href="/reference/status/">Check framework status →</a></p>
     </section>
 
     <footer class="editorial-footer">
@@ -106,5 +55,5 @@
         <a href="https://github.com/hapyco/dygo">GitHub</a>
       </nav>
     </footer>
-  </main>
+  </div>
 </div>

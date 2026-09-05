@@ -19,6 +19,7 @@ export default defineConfig({
 				{ icon: 'github', label: 'dygo on GitHub', href: 'https://github.com/hapyco/dygo' },
 			],
 			customCss: ['./src/styles/global.css'],
+			components: { ThemeSelect: './src/components/ThemeToggle.astro' },
 			editLink: {
 				baseUrl: 'https://github.com/hapyco/dygo-website/edit/main/',
 			},
