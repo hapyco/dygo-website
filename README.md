@@ -43,6 +43,21 @@ Build the static site:
 npm run build
 ```
 
+## Cloudflare deployment
+
+Use these Workers Builds settings:
+
+- Build command: `npm run build`
+- Deploy command: `npx wrangler deploy`
+
+The `wrangler.jsonc` file deploys the static files in `dist/`. Keep this file
+in version control. The site does not require the `@astrojs/cloudflare` server
+adapter. Without an explicit config, Wrangler can install that adapter during
+automatic setup and cause a version mismatch.
+
+To check deployment packaging without publishing, run the build, then run
+`npx wrangler deploy --dry-run`.
+
 ## Write documentation
 
 Documentation files live in `src/content/docs/`. Use `.mdx` for new pages. Add
