@@ -3,6 +3,18 @@ title: dygo
 description: The opinionated Go framework for serious business software.
 template: splash
 pagefind: false
+hero:
+  title: Build business software without rebuilding the foundation.
+  tagline: Define your data and business logic. dygo provides PostgreSQL, permissions, APIs, background Jobs, and Studio.
+  actions:
+    - text: Start the quickstart
+      link: /start-here/quickstart/
+      variant: primary
+      icon: lucide:arrow-up-right
+    - text: Explore the framework
+      link: /start-here/core-concepts/
+      variant: secondary
+      icon: lucide:book-open
 head:
   - tag: meta
     attrs:
@@ -14,6 +26,36 @@ head:
       content: Readable metadata, compiled Go behavior, PostgreSQL, secure APIs, durable Jobs, and Studio.
 ---
 
-import EditorialHome from '../../components/EditorialHome.astro';
+The Go framework for business software.
 
-<EditorialHome />
+Define the business in readable metadata. Write business behavior in Go. dygo handles the repeated platform foundation.
+
+## Define the business
+
+**Apps** group your business modules. **Entities** define their data in YAML. **Go** handles Hooks and Jobs. **Studio** turns that metadata into forms, lists, and Record details.
+
+Shared conventions give developers and coding agents a consistent structure to build on.
+
+## Built in
+
+- PostgreSQL schema sync and explicit database Patches
+- Authentication, roles, and Entity permissions
+- Record APIs and transactional Hooks
+- Durable Jobs, retries, and Schedules
+- Encrypted secrets, Activity history, and diagnostic Logs
+
+## Start a project
+
+With dygo installed and PostgreSQL running:
+
+```sh title="Terminal"
+dygo new my-system
+cd my-system
+dygo db prepare
+dygo setup
+dygo dev
+```
+
+## Current status
+
+dygo is in early framework development. APIs and file formats can change before the first stable release. The framework source is available on [GitHub](https://github.com/hapyco/dygo).

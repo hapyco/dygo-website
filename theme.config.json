@@ -1,0 +1,148 @@
+{
+  "$schema": "https://prosefly.dev/schema/lotus.json",
+  "name": "dygo",
+  "description": "The opinionated Go framework for serious business software.",
+  "logo": "/favicon.svg",
+  "favicon": "/favicon.svg",
+  "appearance": {
+    "accent": "indigo",
+    "gray": "neutral",
+    "defaultMode": "system",
+    "radius": "medium"
+  },
+  "markdown": {
+    "expressiveCode": false
+  },
+  "siteNav": [
+    { "label": "Docs", "href": "/start-here/quickstart/" },
+    {
+      "label": "Framework",
+      "href": "https://github.com/hapyco/dygo",
+      "external": true
+    }
+  ],
+  "socials": [
+    {
+      "label": "GitHub",
+      "href": "https://github.com/hapyco/dygo",
+      "external": true,
+      "icon": "simple-icons:github"
+    }
+  ],
+  "themeModeControl": "segmented-control",
+  "docsNav": [
+    {
+      "label": "Start here",
+      "items": [
+        {
+          "label": "Guides",
+          "items": [
+            "start-here/quickstart",
+            "start-here/installation",
+            "start-here/core-concepts"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Build apps",
+      "items": [
+        {
+          "label": "Build apps",
+          "items": [
+            "build-apps/app-model",
+            "build-apps/entities",
+            "build-apps/access",
+            "build-apps/fixtures",
+            "build-apps/hooks"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Run dygo",
+      "items": [
+        {
+          "label": "Run dygo",
+          "items": [
+            "run/database",
+            "run/server-and-studio",
+            "run/secrets"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Background work",
+      "items": [
+        {
+          "label": "Background work",
+          "items": [
+            "background/jobs-and-workers",
+            "background/schedules"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Reference",
+      "items": [
+        {
+          "label": "Reference",
+          "items": [
+            "reference/cli",
+            "reference/record-api",
+            "reference/project-structure",
+            "reference/status"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Principles",
+      "items": [
+        {
+          "label": "Principles",
+          "items": ["concepts/doctrine"]
+        }
+      ]
+    }
+  ],
+  "source": {
+    "github": "hapyco/dygo-website",
+    "branch": "main"
+  },
+  "editLink": {
+    "github": "hapyco/dygo-website",
+    "branch": "main"
+  },
+  "footer": {
+    "copyright": "Copyright © 2026 dygo.",
+    "sections": [
+      {
+        "title": "Documentation",
+        "links": [
+          { "label": "Quickstart", "href": "/start-here/quickstart/" },
+          { "label": "Installation", "href": "/start-here/installation/" },
+          { "label": "Reference", "href": "/reference/cli/" }
+        ]
+      },
+      {
+        "title": "Project",
+        "links": [
+          {
+            "label": "Framework source",
+            "href": "https://github.com/hapyco/dygo",
+            "external": true
+          },
+          {
+            "label": "Documentation source",
+            "href": "https://github.com/hapyco/dygo-website",
+            "external": true
+          },
+          { "label": "dygo.dev", "href": "https://dygo.dev", "external": true }
+        ]
+      }
+    ]
+  }
+}

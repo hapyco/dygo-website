@@ -23,7 +23,7 @@ and are not licensed under CC BY 4.0. See [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Website development
 
-The website uses Astro, Starlight, MDX content collections, and Tailwind CSS 4.
+The website uses Astro, the Lotus documentation theme, and MDX content collections.
 
 Install dependencies:
 
@@ -61,12 +61,12 @@ To check deployment packaging without publishing, run the build, then run
 ## Write documentation
 
 Documentation files live in `src/content/docs/`. Use `.mdx` for new pages. Add
-the page to the explicit sidebar in `astro.config.mjs` when it belongs in the
-main reading path.
+the page to the relevant `docsNav` section in `theme.config.json` when it belongs
+in the main reading path.
 
 Use the product vocabulary from the framework repository. Describe current
 behavior as current. Label unavailable behavior as `planned`, `proposed`, or
 `coming soon`.
 
-The landing page imports Astro components from `src/components/`. Shared theme
-tokens and Starlight overrides live in `src/styles/global.css`.
+The landing page uses Lotus's native splash layout. Site identity, navigation,
+appearance, source links, and footer links live in `theme.config.json`.
