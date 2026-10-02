@@ -1,54 +1,42 @@
 ---
-title: dygo
-description: The opinionated Go framework for serious business software.
+title: Dygo
+description: An opinionated Go framework for serious business software.
 template: splash
 pagefind: false
 hero:
-  title: Build business software without rebuilding the foundation.
-  tagline: Define your data and business logic. dygo provides PostgreSQL, permissions, APIs, background Jobs, and Studio.
+  title: Business logic deserves a solid foundation.
+  tagline: Build business software with Go and PostgreSQL. Define your data in readable metadata. Let Dygo handle the structure around it.
   actions:
-    - text: Start the quickstart
+    - text: Get started
       link: /start-here/quickstart/
       variant: primary
-      icon: lucide:arrow-up-right
-    - text: Explore the framework
+    - text: Read the concepts
       link: /start-here/core-concepts/
       variant: secondary
-      icon: lucide:book-open
 head:
   - tag: meta
     attrs:
       property: og:title
-      content: dygo | structure for serious business software
+      content: Dygo — structure for serious business software
   - tag: meta
     attrs:
       property: og:description
-      content: Readable metadata, compiled Go behavior, PostgreSQL, secure APIs, durable Jobs, and Studio.
+      content: Readable metadata, compiled Go behavior, PostgreSQL, permission-aware APIs, background Jobs, and Studio.
 ---
 
-The Go framework for business software.
+<div className="dygo-home">
+<div className="dygo-intro">
+<div>
+<p className="dygo-kicker">Go for behavior. Metadata for structure.</p>
+<h2>Start with your business.</h2>
+<p>Apps organize your modules. Entities describe your data. Hooks and Jobs hold your Go logic. Studio gives your team a place to work.</p>
+<p>One set of conventions for developers and coding agents, from the first Record to the next migration.</p>
+<a href="/start-here/installation/">Install Dygo</a>
+</div>
+<div>
 
-Define the business in readable metadata. Write business behavior in Go. dygo handles the repeated platform foundation.
-
-## Define the business
-
-**Apps** group your business modules. **Entities** define their data in YAML. **Go** handles Hooks and Jobs. **Studio** turns that metadata into forms, lists, and Record details.
-
-Shared conventions give developers and coding agents a consistent structure to build on.
-
-## Built in
-
-- PostgreSQL schema sync and explicit database Patches
-- Authentication, roles, and Entity permissions
-- Record APIs and transactional Hooks
-- Durable Jobs, retries, and Schedules
-- Encrypted secrets, Activity history, and diagnostic Logs
-
-## Start a project
-
-With dygo installed and PostgreSQL running:
-
-```sh title="Terminal"
+```sh title="Create a project"
+# With Dygo installed and PostgreSQL running
 dygo new my-system
 cd my-system
 dygo db prepare
@@ -56,6 +44,26 @@ dygo setup
 dygo dev
 ```
 
-## Current status
+</div>
+</div>
 
-dygo is in early framework development. APIs and file formats can change before the first stable release. The framework source is available on [GitHub](https://github.com/hapyco/dygo).
+<nav className="dygo-paths" aria-label="Explore the documentation">
+<a href="/build-apps/entities/">
+<span>01 / Build</span>
+<h3>Model the work</h3>
+<p>Define Entities, permissions, Fixtures, and Hooks with explicit, reviewable contracts.</p>
+</a>
+<a href="/run/database/">
+<span>02 / Run</span>
+<h3>Operate with confidence</h3>
+<p>Prepare PostgreSQL, apply migrations, manage secrets, and run background work.</p>
+</a>
+<a href="/reference/cli/">
+<span>03 / Reference</span>
+<h3>Find the details</h3>
+<p>Look up CLI commands, Record APIs, project structure, and current capabilities.</p>
+</a>
+</nav>
+
+<p className="dygo-status">Dygo is in early development. APIs and file formats can change before the first stable release. Read the <a href="/reference/status/">current status</a> or explore the <a href="https://github.com/hapyco/dygo">framework source</a>.</p>
+</div>

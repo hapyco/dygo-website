@@ -1,20 +1,22 @@
 {
   "$schema": "https://prosefly.dev/schema/lotus.json",
-  "name": "dygo",
+  "name": "Dygo",
   "description": "The opinionated Go framework for serious business software.",
-  "logo": "/favicon.svg",
   "favicon": "/favicon.svg",
   "appearance": {
-    "accent": "indigo",
-    "gray": "neutral",
+    "accent": "red",
+    "gray": "stone",
     "defaultMode": "system",
-    "radius": "medium"
+    "radius": "small"
   },
   "markdown": {
-    "expressiveCode": false
+    "expressiveCode": {}
   },
   "siteNav": [
-    { "label": "Docs", "href": "/start-here/quickstart/" },
+    {
+      "label": "Documentation",
+      "href": "/start-here/quickstart/"
+    },
     {
       "label": "Framework",
       "href": "https://github.com/hapyco/dygo",
@@ -103,7 +105,9 @@
       "items": [
         {
           "label": "Principles",
-          "items": ["concepts/doctrine"]
+          "items": [
+            "concepts/doctrine"
+          ]
         }
       ]
     }
@@ -117,14 +121,23 @@
     "branch": "main"
   },
   "footer": {
-    "copyright": "Copyright © 2026 dygo.",
+    "copyright": "\u00a9 2026 Dygo. Structure for business software.",
     "sections": [
       {
         "title": "Documentation",
         "links": [
-          { "label": "Quickstart", "href": "/start-here/quickstart/" },
-          { "label": "Installation", "href": "/start-here/installation/" },
-          { "label": "Reference", "href": "/reference/cli/" }
+          {
+            "label": "Quickstart",
+            "href": "/start-here/quickstart/"
+          },
+          {
+            "label": "Installation",
+            "href": "/start-here/installation/"
+          },
+          {
+            "label": "Reference",
+            "href": "/reference/cli/"
+          }
         ]
       },
       {
@@ -140,9 +153,33 @@
             "href": "https://github.com/hapyco/dygo-website",
             "external": true
           },
-          { "label": "dygo.dev", "href": "https://dygo.dev", "external": true }
+          {
+            "label": "dygo.dev",
+            "href": "https://dygo.dev",
+            "external": true
+          }
         ]
       }
     ]
-  }
+  },
+  "components": {
+    "SiteBrand": "./src/components/SiteBrand.astro",
+    "PageHeader": "./src/components/PageHeader.astro",
+    "SearchDialog": "./src/components/SearchDialog.astro"
+  },
+  "head": [
+    {
+      "tag": "style",
+      "src": "./src/styles/dygo.css"
+    }
+  ],
+  "credits": false,
+  "pageActions": [
+    {
+      "type": "copy-page"
+    },
+    {
+      "type": "view-markdown"
+    }
+  ]
 }

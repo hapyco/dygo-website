@@ -1,0 +1,22 @@
+---
+import { SearchDialog } from '@prosefly/astro-theme-lotus/components';
+---
+<SearchDialog />
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]');
+  const triggers = [...document.querySelectorAll<HTMLButtonElement>('[data-search-trigger]')];
+  triggers.forEach((trigger) => trigger.setAttribute('aria-keyshortcuts', 'Control+k Meta+k'));
+
+  document.addEventListener('keydown', (event) => {
+    if (!dialog) return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      if (!dialog.open) triggers.find((trigger) => trigger.getClientRects().length)?.click();
+      dialog.querySelector<HTMLInputElement>('input')?.focus();
+    } else if (event.key === 'Escape' && dialog.open) {
+      // Search inputs can consume Escape to clear their text before the dialog closes.
+      event.preventDefault();
+      dialog.close();
+    }
+  });
+</script>
