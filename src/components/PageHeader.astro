@@ -1,0 +1,23 @@
+---
+import type { ComponentProps } from 'astro/types';
+import { PageActions } from '@prosefly/astro-theme-lotus/components';
+interface Props {
+  title: string;
+  description?: string;
+  sectionTitle?: string;
+  pageActions?: ComponentProps<typeof PageActions>['actions'];
+  pageUrl: string;
+  markdownUrl: string;
+}
+const { title, description, sectionTitle, pageActions = [], pageUrl, markdownUrl } = Astro.props;
+---
+<header class="dygo-page-header">
+  <div class="dygo-page-tools">
+    <p class="dygo-eyebrow">{sectionTitle ?? 'Documentation'}</p>
+    <div data-pagefind-ignore>
+      <PageActions actions={pageActions} markdownUrl={markdownUrl} pageUrl={pageUrl} title={title} />
+    </div>
+  </div>
+  <h1>{title}</h1>
+  {description && <p class="dygo-page-description">{description}</p>}
+</header>

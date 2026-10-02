@@ -1,0 +1,5 @@
+---
+interface Props { class?: string; }
+const { class: className } = Astro.props;
+---
+<a href="/" aria-label="Dygo home" class:list={['dygo-wordmark', className]}>Dygo</a>
