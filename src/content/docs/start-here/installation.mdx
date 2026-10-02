@@ -3,7 +3,7 @@ title: Installation
 description: Install a verified Dygo release and update a generated project.
 ---
 
-Dygo distributes binaries for macOS, Linux, and Windows on [GitHub Releases](https://github.com/hapyco/dygo/releases). These guides have been checked against **v0.0.6**. See [Framework status](/reference/status/) for the release boundary.
+Dygo distributes binaries for macOS, Linux, and Windows on [GitHub Releases](https://github.com/hapyco/dygo/releases). The current release is **[v0.0.7](https://github.com/hapyco/dygo/releases/tag/v0.0.7)**. See [Framework status](/reference/status/) for the release boundary.
 
 ## Before you install
 
@@ -40,7 +40,7 @@ Follow the installer's PATH instructions, then open a new terminal if needed.
 Choose a published tag and use the installer hosted on that same release. `DYGO_VERSION` pins the CLI binary and can also downgrade it; it does not change a project dependency:
 
 ```sh title="Terminal"
-curl -fsSL https://github.com/hapyco/dygo/releases/download/v0.0.6/install.sh | DYGO_VERSION=v0.0.6 sh
+curl -fsSL https://github.com/hapyco/dygo/releases/download/v0.0.7/install.sh | DYGO_VERSION=v0.0.7 sh
 ```
 
 Use `DYGO_INSTALL_DIR` to change the destination:
@@ -52,8 +52,8 @@ curl -fsSL https://dygo.dev/install | DYGO_INSTALL_DIR="$HOME/bin" sh
 PowerShell reads the same environment variables. Set them before invoking the installer:
 
 ```powershell title="PowerShell"
-$env:DYGO_VERSION = 'v0.0.6'
-irm https://github.com/hapyco/dygo/releases/download/v0.0.6/install.ps1 | iex
+$env:DYGO_VERSION = 'v0.0.7'
+irm https://github.com/hapyco/dygo/releases/download/v0.0.7/install.ps1 | iex
 Remove-Item Env:DYGO_VERSION
 ```
 

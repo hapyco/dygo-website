@@ -3,7 +3,7 @@ title: Framework status
 description: The verified release baseline and the boundary between implemented and planned features.
 ---
 
-These guides are verified against **[Dygo v0.0.6](https://github.com/hapyco/dygo/releases/tag/v0.0.6)**, published September 22, 2026. Dygo is in early development; APIs, commands, metadata, and operating procedures can change before a stable release.
+The current release is **[Dygo v0.0.7](https://github.com/hapyco/dygo/releases/tag/v0.0.7)**, published October 2, 2026. These guides combine the v0.0.6 source audit with the verified v0.0.7 release changes described below. Dygo is in early development; APIs, commands, metadata, and operating procedures can change before a stable release.
 
 ## Available in the verified release
 
@@ -34,22 +34,26 @@ A generic Record screen for a Job Execution is distinct from a dedicated Job ope
 
 ## Known limitations in the audited baseline
 
-These framework issues describe failures found in the audited source. Their presence in the UI or SDK is not a guarantee that the affected workflow succeeds. Follow the issue and release notes for a verified fix.
+These follow-ups remain open after v0.0.7. Their presence in the UI or SDK is not a guarantee that the affected workflow succeeds. Follow the issue and release notes for a verified fix.
 
 | Area | Tracked limitation |
 | --- | --- |
-| CSV imports | Queued imports can fail at system Record bookkeeping ([#293](https://github.com/hapyco/dygo/issues/293)); status counts also need correction ([#295](https://github.com/hapyco/dygo/issues/295)). |
-| Attachments | Studio upload on Single Entities is blocked ([#290](https://github.com/hapyco/dygo/issues/290)); required attachments cannot complete new Record creation ([#291](https://github.com/hapyco/dygo/issues/291)). |
-| Forms | Defaults-only creation and clearing optional typed values need fixes ([#289](https://github.com/hapyco/dygo/issues/289)). |
-| Record concurrency | Snapshot locking and random-name collision retry need correction ([#292](https://github.com/hapyco/dygo/issues/292), [#288](https://github.com/hapyco/dygo/issues/288)). |
-| Access edge cases | Proposed updates must preserve system ID ([#296](https://github.com/hapyco/dygo/issues/296)); fetched-Field traversal needs a defined target access policy ([#297](https://github.com/hapyco/dygo/issues/297)). |
-| Process lifecycle | Long-operation feedback, Worker failure draining, Git subprocess cancellation, and pending confirmations are being addressed ([#287](https://github.com/hapyco/dygo/issues/287), [#294](https://github.com/hapyco/dygo/issues/294), [#298](https://github.com/hapyco/dygo/issues/298), [#299](https://github.com/hapyco/dygo/issues/299)). |
+| CSV imports | Interrupted import retries can duplicate target rows ([#143](https://github.com/hapyco/dygo/issues/143)). |
+| Attachments | Required attachments cannot complete new Record creation ([#291](https://github.com/hapyco/dygo/issues/291)). |
+| Access edge cases | System-ID and fetched-Field permission predicates can reject otherwise valid updates ([#296](https://github.com/hapyco/dygo/issues/296), [#297](https://github.com/hapyco/dygo/issues/297)). No permission bypass was demonstrated in these findings. |
+| Process lifecycle | Git transport descendants and pending confirmation reads need further cancellation handling ([#298](https://github.com/hapyco/dygo/issues/298), [#299](https://github.com/hapyco/dygo/issues/299)). |
 | App Pages | Bundled Vue Pages work, but independently packaged renderer discovery and a versioned extension workflow remain open ([#265](https://github.com/hapyco/dygo/issues/265)). |
 
-## Upcoming CLI release
+## Released in v0.0.7
 
-The v0.0.7 candidate is under final verification and is not yet published. It adds no commands or flags. Its tested progress contract writes to stderr, uses animation for slow TTY operations, and uses plain output for CI or pipes; stdout result contracts stay unchanged. The release candidate is not promised by this v0.0.6 baseline. Check `dygo version` and the [published release notes](https://github.com/hapyco/dygo/releases) before adopting new behavior. An unreleased source change is not an installed binary feature.
+The [release notes](https://github.com/hapyco/dygo/releases/tag/v0.0.7) cover installer verification and replacement safety, delayed CLI progress on stderr, Record collision retries and snapshot locking, defaults-only creation, clearing optional typed values, attachment uploads on saved Single Entity settings, CSV import bookkeeping and count handling, Worker failure shutdown, and command-menu interaction improvements.
+
+The release adds no commands or flags. Slow TTY operations use animated progress; CI and pipes use plain output. Stdout result contracts stay unchanged. Re-run the installer to update the CLI, verify `dygo version`, then review and apply the [project upgrade and migration](/start-here/installation/#update-an-existing-project). Project `upgrade` targets the running binary's version and does not update the global CLI. Discovery and uninstall commands remain unavailable.
 
 ## Verification boundary
 
-The documentation audit compared the release source with framework commit `ff499ea75066618cb1bdcb57f88adc46f57da2ec`. Public SDK files, registered Record routes, migration lifecycle, project generation, and CLI reference behavior matched the release at that checkpoint. Examples are based on implemented contracts; this does not claim that every production deployment or integration has been tested.
+The original v0.0.6 documentation audit compared the release source with framework commit `ff499ea75066618cb1bdcb57f88adc46f57da2ec`. Public SDK files, registered Record routes, migration lifecycle, project generation, and CLI reference behavior matched the release at that checkpoint. Examples are based on implemented contracts; this does not claim that every production deployment or integration has been tested.
+
+The v0.0.7 release validation passed 1,236 Go tests with PostgreSQL 17, `go vet`, focused race tests, 110 Studio tests, and embedded builds. After publication, Linux AMD64 fresh installation and a public v0.0.6-to-v0.0.7 CLI/project upgrade passed, including real module resolution, runner builds, database preparation and migration, preserved test data, health checks, and Studio assets. Native installer checks also covered macOS ARM64 and Windows AMD64 with PowerShell 5.1 and 7. Linux ARM64, macOS AMD64, and Windows ARM64 were cross-built and inspected, but not executed natively. See the release notes for the complete evidence and remaining follow-ups.
+
+Versioned source links elsewhere in these guides retain the original v0.0.6 audit references; they are not claims that every API was independently re-audited at v0.0.7.

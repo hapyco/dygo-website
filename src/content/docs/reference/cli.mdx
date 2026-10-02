@@ -3,7 +3,7 @@ title: CLI reference
 description: Current commands, flags, output behavior, and safe automation conventions.
 ---
 
-This reference targets [v0.0.6](/reference/status/). Use `dygo <command> --help` to inspect the binary you actually installed. Environment-aware commands default to `development`; use full names `staging` and `production`.
+This reference targets [v0.0.7](/reference/status/). Use `dygo <command> --help` to inspect the binary you actually installed. Environment-aware commands default to `development`; use full names `staging` and `production`.
 
 For projects with App Hooks, Jobs, or actions, run runtime commands through the compiled project runner (`go run ./cmd/dygo <command>` during development). The command names below are shared by that runner and the stock CLI; the stock binary does not contain your App Go code. See [App SDK](/reference/sdk/#run-compiled-app-behavior).
 
@@ -141,7 +141,7 @@ dygo secret record-key init --env development --dry-run
 dygo secret record-key init --env development --yes
 ```
 
-`secret get` writes the raw value to stdout. Keep it out of captured logs. Secret names can use dot-separated paths. `rotate-key` prompts and supports `--yes`; it has no `--dry-run` in v0.0.6.
+`secret get` writes the raw value to stdout. Keep it out of captured logs. Secret names can use dot-separated paths. `rotate-key` prompts and supports `--yes`; it has no `--dry-run` in v0.0.7.
 
 Record-key rotation requires stopped writers and backups. Follow the complete [rotation procedure](/run/secrets/#record-encryption-keys) before using `dygo secret record-key rotate --offline`.
 
@@ -151,9 +151,9 @@ In the verified release, `dev` writes its backend ready URL to stdout and diagno
 
 There is no global `--json` contract. Do not parse decorative progress or assume every command accepts the same flags. Use command exit status and the documented result contract. A reviewed `--yes` replaces runtime confirmation where the command supports it; generators are already non-interactive.
 
-### Candidate v0.0.7 output
+### v0.0.7 progress output
 
-The next release is being verified and is **not yet published**. Its tested contract adds no commands or flags. Long-operation progress goes to stderr, with animated output for slow TTY operations and plain output in CI or pipes. Existing stdout result contracts are unchanged. This section describes the release candidate; check the published release notes before expecting it from an installed binary.
+[Dygo v0.0.7](https://github.com/hapyco/dygo/releases/tag/v0.0.7) adds no commands or flags. Long operations show delayed progress on stderr, with animated output for slow TTY operations and plain output in CI or pipes. Existing stdout result contracts are unchanged. Run `dygo version` to confirm the installed binary; project `upgrade` does not update the global CLI.
 
 ## Shell completion
 
