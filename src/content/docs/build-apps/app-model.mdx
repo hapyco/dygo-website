@@ -71,3 +71,33 @@ App code must use the public packages under `pkg/dygo`. Framework implementation
 Core is the required system App. Studio is the first-party interface App. A generated project also contains its own business Apps.
 
 Core and business Apps use the same metadata model where practical. Framework bootstrap can use narrow exceptions, but it must not create a private product capability that Apps cannot reach.
+
+## Write a manifest
+
+```yaml title="apps/crm/app.yml"
+name: crm
+label: CRM
+version: 0.1.0
+description: Customer relationship management
+dependencies:
+  - core
+paths:
+  entities: entities
+  patches: patches
+  docs: docs
+  assets: assets
+```
+
+Name, label, and version are required. Paths are clean, relative App paths. Dependencies name installed Apps; manifest version constraints and remote source declarations are not supported. Framework-owned names such as `core`, `studio`, and `localization` are reserved.
+
+## Install an existing App
+
+Use the real repository URL of the App you want to install:
+
+```sh title="Example repository URL"
+dygo app install https://github.com/acme/dygo-crm.git --dry-run
+```
+
+The example URL is a placeholder. The repository root must contain `app.yml`, and its dependencies must already be installed. After review, remove `--dry-run` to copy App source without Git metadata and update Hook and Job runner wiring.
+
+App installation changes project files only. Build or run the project runner, then use `go run ./cmd/dygo db migrate` to apply App state, Patches, metadata, access, and Fixtures with the App's compiled code. Apps may also own [Pages and compiled actions](/build-apps/actions-and-pages/).

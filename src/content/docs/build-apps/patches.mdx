@@ -1,0 +1,59 @@
+---
+title: Patches
+description: Describe explicit schema transitions and App installation changes in YAML.
+---
+
+Entity metadata declares the current schema. Patches describe transitions that metadata cannot infer safely. Back up production data before applying destructive transitions; Dygo does not create backups for you.
+
+## Write an App-owned Patch
+
+Place ordered YAML files under the App's manifest-defined `patches` directory:
+
+```yaml title="apps/crm/patches/0001_rename_contact_email.yml"
+kind: patch
+version: 1
+id: 0001_rename_contact_email
+phase: pre-sync
+description: Rename the existing contact email column.
+operations:
+  - type: rename-field
+    entity: contact
+    from: old-email
+    to: email
+```
+
+The ID must match the filename without its extension. App dependencies run first; independent Apps sort by name; Patch files sort by filename. Applied Patches have recorded checksums. Do not edit an applied Patch; add a new one.
+
+## Choose the phase and lifecycle
+
+Use `pre-sync` for changes that need the old schema, such as a rename or backfill before a required constraint. Use `post-sync` for operations that need new metadata.
+
+`run-on` accepts `migrate` (default), `install`, or `both`. A fresh App installation records historical `migrate` Patches as baselined without executing them. Install-capable Patches must use `post-sync`.
+
+## Supported operations
+
+| Operation | Use |
+| --- | --- |
+| `rename-field`, `rename-entity` | Preserve storage while changing metadata identity. |
+| `copy-field`, `backfill-field` | Copy or fill data before a schema rule changes. |
+| `drop-field` | Explicitly discard a stored Field after review. |
+| `change-field-type` | Convert data with an explicit expression. |
+| `sql` | Reviewed SQL escape hatch with name, reason, and statement. |
+| `system-record-create`, `system-record-update`, `system-record-upsert`, `system-record-delete` | Change the owning App's system Records in post-sync. |
+
+Structured operations are App-scoped. SQL is printed in dry-run plans and cannot contain transaction control or database-level administration. Patch values and reasons must not expose credentials.
+
+System Record operations use the [trusted writer contract](/reference/sdk/#access-scopes), require a non-empty reason, and cannot target another App. Dry-run output redacts their match and value payloads. See the [versioned operation schemas and examples](https://github.com/hapyco/dygo/blob/v0.0.6/docs/patches.md) for exact fields.
+
+## Review and apply
+
+```sh title="Terminal"
+dygo db migrate --dry-run
+dygo db migrate
+```
+
+Migration validates the reviewed plan under a lifecycle lock. Patches, their ledger, schema, metadata, access, Fixtures, and App state commit or roll back together. After commit, Dygo refreshes `db/schema.sql` separately.
+
+If a late Fixture fails, fix the Fixture and retry. If the error says migration committed but the schema snapshot failed, the database already changed; inspect and repair the snapshot instead of assuming rollback.
+
+Use [database prune](/run/database/#remove-orphaned-schema) for deliberate cleanup of metadata-orphaned objects. Permanent unmanaged objects belong outside Dygo's managed schema or must become metadata.

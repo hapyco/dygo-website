@@ -28,16 +28,16 @@ Validation checks Entity identity, Fields, match rules, dependencies, and Record
 ## Preview the apply plan
 
 ```sh title="Terminal"
-dygo fixture apply --dry-run
+dygo db migrate --dry-run
 ```
 
 Apply after you review the plan:
 
 ```sh title="Terminal"
-dygo fixture apply
+dygo db migrate
 ```
 
-Fixture application is part of `dygo db prepare`.
+Fixtures are applied in the `db migrate` transaction, after metadata and access. `db prepare` creates a missing database and runs that same lifecycle. There is no separate `fixture apply` command.
 
 ## Keep credentials out
 
@@ -55,3 +55,20 @@ dygo fixture export crm/contact
 ```
 
 Use `--include-links` when the export must include linked Fixture dependencies.
+
+## Define repeatable Records
+
+For the Contact Entity with a unique email Field:
+
+```yaml title="apps/crm/entities/contact/fixtures.yml"
+entity: contact
+match: [email]
+records:
+  - full-name: Alex Morgan
+    email: alex@example.com
+    status: Lead
+```
+
+`match` must identify a unique Field or top-level unique constraint. Every Fixture Record must supply those match Fields. Migration updates the matching Record or creates a new one. Fixtures do not delete Records by omission.
+
+Use natural-key `match` mappings for Links instead of environment-specific numeric IDs. Linked Fixtures are ordered by dependencies. Standalone collection Fixtures, Core role/permission Fixtures, system Entity writes, and secret Field values are rejected. Keep roles and grants in access metadata.

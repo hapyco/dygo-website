@@ -1,72 +1,85 @@
 ---
 title: Access and permissions
-description: Define global roles and flat Entity permissions in app-owned YAML.
+description: Define roles, Entity and Page access, row conditions, and Field restrictions.
 ---
 
-Access metadata defines which roles can act on an Entity. The server reads effective grants from Core Records and enforces them for Record routes.
-
-Current access is flat. It supports Entity actions. Row rules and Field rules are planned.
+Dygo enforces permissions on the server. App-owned YAML defines roles and policies. Migration stores effective grants in Core; runtime checks read those Records.
 
 ## Define a role
-
-Add App-contributed global roles to `apps/crm/access/_roles.yml`:
 
 ```yaml title="apps/crm/access/_roles.yml"
 roles:
   - name: sales-agent
     label: Sales Agent
-    description: Works with CRM contacts and opportunities.
+    description: Works with CRM contacts.
 ```
 
-Role names are global and must be unique across Apps.
+Role names are global kebab-case keys. Two Apps cannot define the same role name.
 
-## Define an Entity policy
-
-Create `apps/crm/access/contact.access.yml`:
+## Grant Entity actions
 
 ```yaml title="apps/crm/access/contact.access.yml"
 policy:
   - role: sales-agent
-    can:
-      - read
-      - create
-      - update
-      - export
-      - print
+    can: [read, create, update, export, print]
 ```
 
-Current base actions are `read`, `create`, `update`, `delete`, `export`, and `print`.
+Base actions are `read`, `create`, `update`, `delete`, `export`, and `print`. `can` also accepts registered [Entity action](/build-apps/actions-and-pages/) names.
 
-## Validate and apply
+Cross-App contributions live at `access/<target-app>/<entity>.access.yml`. Page policies use `access/<page>.page.access.yml`; Page access does not grant Record access.
+
+## Restrict rows and Fields
+
+Policies can add validated row conditions and Field restrictions. For an App that defines an `employee` Link with a `user` Link on its target:
+
+```yaml title="Example Entity policy"
+policy:
+  - role: employee
+    can: [read, update]
+    when:
+      record.employee.user: actor.user
+    fields:
+      deny-read: [private-notes]
+      deny-write: [status, approved-by]
+```
+
+Declare the referenced role and Fields in your App. Dygo compiles the condition into the Record query scope. The same rules apply to lists, direct reads, counts, aggregates, updates, deletes, action locks, and Link searches. Apps do not supply authorization SQL or JavaScript.
+
+Relationship conditions can also use explicit assignment Entities through `in.entity`, `in.value`, and `in.where`. See the [versioned access contract](https://github.com/hapyco/dygo/blob/v0.0.6/docs/access.md) for that shape.
+
+## Validate, apply, and inspect
 
 ```sh title="Terminal"
 dygo access validate
-dygo access apply
+dygo db migrate --dry-run
+dygo db migrate
+dygo access show crm/contact
+dygo access explain crm/contact --user person@example.com --action read
 ```
 
-`access apply` resolves the file contributions and creates or updates the effective Role and permission Records. It does not assign Users to roles.
+`db migrate` applies access metadata and Fixtures in the migration transaction. `db prepare` creates a missing database and runs the same lifecycle. There is no separate `access apply` command.
 
-`dygo db prepare` runs `access apply` as part of environment preparation. `dygo db migrate` does not apply access metadata by itself.
+`access explain` reports roles, matching policies, row access, and denied Fields. Add `--record 42` to inspect a specific numeric Record ID.
 
-## Assign users
+## Assign Users
 
-User-role assignment is runtime data. Manage it through setup, Studio, an admin path, or an explicit environment Fixture.
+User-role assignments are runtime data. Manage them through Studio, setup, or explicit environment Fixtures. Defining a role does not assign it to any User. Administrator is a separate User flag.
 
-The Administrator flag is separate from normal roles.
+## Resolve conflicts and export
 
-## Conflict rules
+Duplicate Entity/role policies fail validation unless exactly one contribution uses `override: true`. An override replaces the entire conflicting policy. It does not merge grants, follow App order, or allow override chains.
 
-Two Apps cannot define the same role name. Two policy files cannot define the same Entity and role grant unless one contribution explicitly replaces the other with `override: true`.
+Export database-authored access into an explicit destination App:
 
-dygo rejects unresolved conflicts. It does not use App order or last-writer-wins behavior.
+```sh title="Terminal"
+dygo access export crm/contact --in crm --dry-run
+dygo access export crm/contact --in crm
+```
 
-## Current boundary
+Use `dygo access export --in crm` for roles. Export does not include User-role assignments. Review and validate exported policies before migration.
 
-The current permission engine does not provide:
+Removing a role or policy from YAML does not automatically delete the corresponding database Record. Do not treat file deletion as immediate access revocation.
 
-- row ownership or sharing
-- row filters
-- Field-level grants
-- workflow-specific actions
+## Trusted App code
 
-Keep those rules in server-side App behavior until the framework has a supported metadata contract for them.
+Use `Records.AsActor(actor)` for user-scoped SDK operations. Private Entities use owner-scoped `AsPrivate(actor, reason)`. Explicit `AsSystem(reason)` is privileged access for trusted code; it does not permit ordinary writes to system Entities. See [App SDK](/reference/sdk/).

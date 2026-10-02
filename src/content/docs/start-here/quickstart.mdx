@@ -1,89 +1,87 @@
 ---
 title: Quickstart
-description: Create a dygo project, prepare PostgreSQL, create the first Administrator, and open Studio.
-sidebar:
-  order: 1
+description: Create a project, configure PostgreSQL, bootstrap an Administrator, and open Studio.
 ---
 
-dygo is in early framework development. APIs and file formats can change before the first stable release.
-
-This guide creates a project, prepares its database, creates the first Administrator, and starts Studio.
+Create a working Dygo project with PostgreSQL and Studio. The commands below target [v0.0.6](/reference/status/), an early release whose APIs can still change.
 
 ## Before you start
 
-You need:
+You need Go 1.26.2 or later, Git, a running PostgreSQL server, and the [Dygo release binary](/start-here/installation/). Your PostgreSQL role needs permission to create the development database, or an administrator must create it first.
 
-- PostgreSQL
-- a dygo release binary
-- Git
-
-The installer reads release assets from GitHub. If the project has no public release for your platform, build from the framework repository instead.
-
-## Install dygo
-
-Run the public installer:
-
-```sh title="Terminal"
-curl -fsSL https://dygo.dev/install | sh
-```
-
-Confirm that the binary is available:
-
-```sh title="Terminal"
+```sh title="Check your tools"
+go version
+git --version
 dygo version
 ```
 
-See [Installation](/start-here/installation/) for Windows and custom install paths.
-
-## Create the project
-
-Generate a new project and enter its directory:
+## Create a project
 
 ```sh title="Terminal"
 dygo new my-system
 cd my-system
 ```
 
-The project has its own App directory, configuration, database snapshot, and compiled runner.
+Generation creates App source, `dygo.yml`, encrypted environment credentials, queue configuration, managed Core and Studio metadata, and `cmd/dygo/main.go`. It resolves Go dependencies by default. A schema snapshot is written after migration.
 
-## Prepare PostgreSQL
+Use `--module example.com/team/my-system` when the project needs a specific Go module path. `--skip-tidy` defers dependency resolution; run `go mod tidy` yourself before compiling the runner.
 
-Run the repeatable environment preparation command:
+## Configure PostgreSQL
+
+The generated development secret points to:
+
+```text
+postgres://localhost/my_system_development?sslmode=disable
+```
+
+That default uses local PostgreSQL authentication. If your server requires another user, password, host, or database, edit the encrypted secret:
 
 ```sh title="Terminal"
+dygo secret edit
+```
+
+Set `DATABASE_URL` in the editor. Do not put the plaintext value in `dygo.yml` or source control. The default editor is `nano`; select another with `--editor "code --wait"`.
+
+```sh title="Terminal"
+dygo secret validate
 dygo db prepare
 ```
 
-This command creates the configured database when it is missing. It then applies metadata migration, access metadata, and Fixtures.
+`prepare` creates the configured database if it is missing. It then runs the migration lifecycle: App state, Patches, metadata, access, and Fixtures. Review the displayed plan before confirming.
 
 ## Create the Administrator
-
-Bootstrap the first Administrator:
 
 ```sh title="Terminal"
 dygo setup
 ```
 
-The setup command owns initial credentials. Do not add a shared Administrator to a Fixture file.
+Enter the first Administrator's email, full name, and password. Setup owns this bootstrap; do not seed a shared Administrator password in Fixtures.
 
-## Start the development server
+## Open Studio
 
 ```sh title="Terminal"
 dygo dev
 ```
 
-Open [http://localhost:6790/](http://localhost:6790/). Sign in with the Administrator account that you created.
+Open the ready URL printed by the command, normally [http://localhost:6790/](http://localhost:6790/). Sign in with the account you created. Keep the process running while you use Studio.
 
-## Check the project
+## Create your first Entity
 
-Use `doctor` when setup fails or when the project shape changes:
+In a second terminal in the project directory:
+
+```sh title="Terminal"
+dygo generate app crm
+dygo generate entity crm/contact
+dygo entity validate
+dygo db migrate
+```
+
+Entity generation creates metadata, access, and Fixture skeletons. Add compiled behavior separately with `dygo generate hook crm/contact`. See [Entities](/build-apps/entities/) to define your Fields and [Access](/build-apps/access/) to grant non-Administrator users access.
+
+## Diagnose setup
 
 ```sh title="Terminal"
 dygo doctor
 ```
 
-It checks project configuration, PostgreSQL, metadata, access files, Fixtures, Hook and Job wiring, Studio assets, and initial setup state.
-
-## Next step
-
-Read [Core concepts](/start-here/core-concepts/) before you define the first business App. Then follow [Entities](/build-apps/entities/) to create a metadata-backed Record type.
+Doctor checks configuration, queues, secrets, PostgreSQL, metadata, routes, Fixtures, runner wiring, Studio assets, and initial setup. Follow [Troubleshooting](/run/troubleshooting/) when a check fails.

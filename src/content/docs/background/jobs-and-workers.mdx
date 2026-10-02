@@ -19,7 +19,7 @@ apps/crm/jobs/send-welcome-email/
 └── run.go
 ```
 
-It also updates the generated project runner.
+It also updates the generated project runner. Use that runner for migration and runtime commands so your handler is compiled: `go run ./cmd/dygo db migrate`. The stock binary does not load App Job Go files. See [compiled App behavior](/reference/sdk/#run-compiled-app-behavior).
 
 ## Define Job metadata
 
@@ -77,16 +77,16 @@ dygo enforces uniqueness by Job and idempotency key.
 Start all configured queues:
 
 ```sh title="Terminal"
-dygo worker
+go run ./cmd/dygo worker
 ```
 
 Process one available batch and exit:
 
 ```sh title="Terminal"
-dygo worker --once
+go run ./cmd/dygo worker --once
 ```
 
-Production systems that use Jobs must run `dygo serve` and `dygo worker` as separate long-running processes.
+Production systems that use Jobs must run their compiled project binary with `serve` and `worker` as separate long-running processes.
 
 ## Inspect work
 
@@ -99,3 +99,25 @@ dygo job execution show <id-or-name>
 Current Jobs support durable status, retry, timeouts, priorities, delayed execution, cancellation of queued work, and recovery of expired locks.
 
 Queue rate limits, retention policy, and dead-letter handling are planned.
+
+## Configure queues and retries
+
+Queues live in `config/queues.yml`. A generated project registers `default` with concurrency `4`. Every Job queue must be registered. Select queues with repeated `--queue` flags or override process concurrency with `--concurrency`.
+
+```sh title="Terminal"
+go run ./cmd/dygo worker --queue default --concurrency 4 --shutdown-timeout 30s
+```
+
+`--poll-only` disables PostgreSQL notifications; `--poll-interval` sets fallback polling, normally `60s`. Workers also wake for due timestamps.
+
+Retry attempts include the first execution. Omitting `retry` means one attempt. When a retry policy is present, attempts must be at least two. Backoff is exponential; initial delay defaults to `10s` and the cap to `5m`. Handlers must respect their context deadline and tolerate retries. A timeout does not make an external side effect reversible.
+
+## Enqueue from App code
+
+Hooks, Jobs, and Entity actions expose `JobData.Enqueue` with JSON payload and options for idempotency, priority, and delayed execution. Hook enqueues share the Record transaction. See [App SDK](/reference/sdk/#jobs) for service availability.
+
+For one UTC recurring trigger, add `cron` to `job.yml`. See [Schedules](/background/schedules/#use-a-job-cron-shortcut).
+
+## Operator actions
+
+Only queued executions can be cancelled. A manual retry creates a new execution from a failed payload and requires an idempotency key. Studio exposes these actions on Job Execution Records to users with the required Core Job access; specialized operations dashboards remain planned.

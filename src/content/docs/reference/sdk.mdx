@@ -1,0 +1,125 @@
+---
+title: App SDK
+description: Public Go extension points, service availability, transaction scope, and trusted access.
+---
+
+Business Apps import the public package:
+
+```go
+import "github.com/hapyco/dygo/pkg/dygo"
+```
+
+The project runner uses `pkg/dygo/runtime`. Code under `internal/` is framework implementation. The [v0.0.6 public package](https://github.com/hapyco/dygo/tree/v0.0.6/pkg/dygo) is the reference for exact Go signatures.
+
+## Run compiled App behavior
+
+The stock release binary contains framework behavior. It does not load App Go files or automatically invoke your generated runner. After adding Hooks, Jobs, or actions, run runtime commands through `cmd/dygo`:
+
+```sh title="From the project root"
+dygo hook sync
+go run ./cmd/dygo db migrate
+go run ./cmd/dygo dev
+```
+
+In another terminal, use `go run ./cmd/dygo worker` for background work. For deployment, build the project binary and use it for both server and Worker processes:
+
+```sh title="Build the project runner"
+go build -o ./bin/dygo ./cmd/dygo
+./bin/dygo serve
+```
+
+On Windows, use an output such as `./bin/dygo.exe`. Rebuild after App code changes. Generator wiring is not proof that the stock binary contains the registered code. Custom runners must pass their registrars through `pkg/dygo/runtime.Options`; generated Hook/Job wiring does not automatically discover Entity action registrars.
+
+## Available services
+
+| Entry point | Services |
+| --- | --- |
+| `RecordHook` | `Records`, `Jobs`, `Timeline`, `Notifications` |
+| `JobExecution` | `Records`, `Jobs`, `Timeline`, `Notifications` |
+| `EntityActionCall` | `Records`, `Jobs`, `Files`, `Timeline`, `Notifications` |
+
+Hooks and Entity actions receive transaction-scoped services. Jobs execute outside the originating request. Do not assume a Job handler's entire execution is one transaction; use `Records.Transaction` when related Record changes must commit together.
+
+## Records
+
+`RecordData` uses App and Entity keys, never route slugs. `Get`, `Update`, and `Delete` accept numeric IDs.
+
+| Methods | Purpose |
+| --- | --- |
+| `List`, `Get`, `Find` | Retrieve a page, an ID, or a match. |
+| `Create`, `Update`, `Delete` | Mutate metadata-backed Records. |
+| `Count`, `Exists` | Query the current scope. |
+| `Aggregate`, `GroupBy` | Compute scoped aggregates. |
+| `Lock`, `Transaction` | Lock an ordered Record set or group transactional work. |
+| `AsActor`, `AsPrivate`, `AsSystem` | Select an explicit access scope. |
+| `Tree` | Access hierarchical Records. |
+| `SecretStatus`, `DecryptSecret` | Inspect presence or explicitly decrypt in system code. |
+| `System` | Obtain an App-scoped trusted system Record writer. |
+
+`RecordInput` is `map[string]json.RawMessage`. For example, inside a Hook:
+
+```go
+record, err := hook.Records.Get(ctx, "crm", "contact", 42)
+```
+
+SDK writes run framework Hooks such as Activity but do not re-enter Business App Hooks. This differs from normal HTTP lifecycle writes.
+
+## Access scopes
+
+Compiled Apps are trusted server-side code. Use `Records.AsActor(actor)` when work must follow the initiating User's permissions. Actor-scoped access enforces row and Field rules.
+
+`AsPrivate(actor, reason)` accesses an Entity marked `is-private: true`. The Entity's `private-owner-field` defines the owner predicate. It does not open generic private Record routes.
+
+`AsSystem(reason)` requires a non-empty reason and is for explicit privileged operations. It does not enable ordinary mutation of an `is-system: true` Entity.
+
+`Records.System(reason)` returns `SystemRecordWriter`, with `Create`, `Update`, `Delete`, and `Upsert`. Its App is bound to the Hook, Job, or action registration. It can write that App's system Entities only. An App cannot use it to mutate Core or another App's system Records. Upsert matches must identify a metadata-defined unique key.
+
+## Tree Records
+
+`Records.Tree(app, entity)` retains the caller's transaction and actor scope. It provides `Roots`, `Children`, `Descendants`, `Ancestors`, `Path`, `Search`, and `Move`.
+
+SDK anchors use numeric IDs. `Move` accepts a parent Record name; nil makes a root. Create roots and children through ordinary `RecordData.Create`. Cycles and self-parenting are rejected. Tree access does not inherit permission from parents.
+
+## Jobs
+
+Register compiled handlers with `JobRegistry.RegisterJob`. The generated `Run` function receives `JobExecution`, including payload and attempt number.
+
+`JobData.Enqueue` accepts App, Job key, JSON payload, and `EnqueueOptions` with `IdempotencyKey`, `Priority`, and `RunAfter`. Enqueueing from a Hook joins its transaction, so rolled-back business work does not leave committed queued work.
+
+`CancelQueued` accepts an execution ID or name. `Retry` queues a new execution from a failed one and requires a new idempotency key. See [Jobs and Workers](/background/jobs-and-workers/).
+
+## Actions and Pages
+
+`EntityActionRegistry.RegisterEntity` binds an action to an App and Entity. `EntityActionDefinition` includes name, label, selection mode, optional confirmation text, and a destructive flag. Handlers receive an authorized `EntityActionCall`; `ActionError` provides a stable code, message, and details for the HTTP response.
+
+`Page` is a public metadata contract. Studio owns Page hosting and rendering. See [Actions and Pages](/build-apps/actions-and-pages/).
+
+## Files, Timeline, and notifications
+
+`FileData` provides `Upload`, `Attach`, `Open`, `Remove`, and `AsActor`. `FileTarget` identifies the owning App, Entity, numeric Record ID, and attachment Field. Close the reader returned by `Open`. Files are available directly on Entity actions; Hooks and Jobs do not have a `Files` field.
+
+`TimelineData` appends comments and events to product Activity. `NotificationData.Send` creates an in-app notification and can enqueue email delivery in the current transaction. `Recipient` is the Core User Record name. Notification idempotency is scoped to that recipient. SMTP delivery happens later in a Worker; email failure does not remove the in-app notification.
+
+## Logs and dialogs
+
+`dygo.Info`, `dygo.Warning`, and `dygo.Error` are best-effort diagnostic helpers. Use `dygo.Log(ctx, entry)` when you must handle persistence errors. [Logs](/run/logs-and-notifications/) explains their operating boundary.
+
+The public package also defines typed Dialog, DialogAction, and Toast response contracts. Those contracts do not turn planned declarative Workflows into a shipped feature. Check [Framework status](/reference/status/) before using design notes as runtime instructions.
+
+## Record secrets
+
+`SecretStatus` returns presence only. `DecryptSecret` requires explicit `AsSystem` access with a reason, even for Administrators:
+
+```go
+value, err := hook.Records.AsSystem("send integration request").DecryptSecret(
+    ctx, "crm", "connection", hook.RecordID, "token",
+)
+```
+
+The operation uses the current transaction and requires a successful audit Log write before returning plaintext. Do not put that value in logs, errors, Job payloads, or action responses. `errors.Is(err, dygo.ErrSecretUnset)` identifies an unset value.
+
+General public `Config`, `Secrets`, and `Metadata` service APIs remain planned. The existence of internal helpers does not make them supported App SDK surfaces.
+
+## Authorization contract
+
+`Authorizer.Authorize` accepts a `PermissionRequest` containing actor, resource, action, and optional numeric Record ID. A `Resource` identifies an App-scoped Entity or Page. The public interface is an integration contract; it is not an extra service field on Hook or Job arguments.

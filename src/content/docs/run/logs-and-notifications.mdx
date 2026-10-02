@@ -1,0 +1,49 @@
+---
+title: Logs and notifications
+description: Use diagnostic Logs, Record Activity, and durable user notifications.
+---
+
+Diagnostic Logs explain failures and runtime behavior. Activity records business history on a Record. Notifications ask a User to pay attention. They have different storage and access contracts.
+
+## Diagnostic Logs
+
+App code can write through the public SDK:
+
+```go
+dygo.Info(ctx, "Contact import started")
+dygo.Warning(ctx, "Import source is temporarily unavailable")
+dygo.Error(ctx, "Contact import failed", err)
+```
+
+These helpers are best-effort. `dygo.Log(ctx, dygo.LogEntry{...})` returns persistence errors when the caller needs to handle them. Available types are Debug, Info, Warning, Error, and Panic. Structured options can include an App, trace ID, actor, reference Record, and metadata.
+
+The runtime adds context where available. Do not assume best-effort logging proves a successful write. Do not put database URLs, decrypted credentials, Record secrets, or passwords in messages and metadata.
+
+Core Log Records are available through Studio with appropriate permissions. Logs support diagnosis; they do not provide a compliance audit product or automatic retention policy.
+
+## Record Activity
+
+Generic Record writes append Activity in the write transaction. Comments and custom events use `TimelineData.AddComment` and `AddEvent` on Hook, Job, or action services.
+
+HTTP comment creation requires update permission on the target Record. Activity reads require access to a live target. Write-only Field values are excluded from snapshots and changes. See [Record API](/reference/record-api/#activity-and-secret-presence).
+
+## User notifications
+
+Hooks, Jobs, and Entity actions receive a `Notifications` service:
+
+```go
+_, err := call.Notifications.Send(ctx, dygo.NotificationMessage{
+    Recipient: "person@example.com",
+    Title: "Import finished",
+    Message: "The contact import is ready to review.",
+    DeepLink: "/contact",
+    Email: true,
+    IdempotencyKey: "crm:contact-import:42",
+})
+```
+
+`Recipient` is the Core User Record name. The idempotency key is unique for that recipient. Sending creates an in-app notification and, when requested, enqueues the Core email Job in the current transaction.
+
+Configure [SMTP](/run/configuration/#optional-smtp) and run `dygo worker` to deliver email after commit. Retry and delivery errors use the Job system. Email failure does not remove the in-app notification.
+
+A notification deep link does not bypass access rules. The target screen and Records still require permission.

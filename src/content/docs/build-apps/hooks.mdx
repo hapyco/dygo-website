@@ -11,7 +11,14 @@ Record Hooks add App behavior to the Record lifecycle. Hook code compiles into t
 dygo generate hook crm/contact
 ```
 
-The command creates `apps/crm/entities/contact/hooks.go` and updates the generated project runner.
+The command creates `apps/crm/entities/contact/hooks.go` and updates the generated project runner. Run that runner to include the Hook:
+
+```sh title="From the project root"
+go run ./cmd/dygo db migrate
+go run ./cmd/dygo dev
+```
+
+The stock `dygo` binary does not load App Hooks. See [compiled App behavior](/reference/sdk/#run-compiled-app-behavior) for production builds.
 
 ## Register behavior
 
@@ -74,3 +81,13 @@ If App packages changed, sync the generated runner:
 ```sh title="Terminal"
 dygo hook sync
 ```
+
+## Lifecycle events and scope
+
+Supported events are `before-validate`, `validate`, `before-create`, `after-create`, `before-update`, `after-update`, `before-delete`, and `after-delete`. After-write events still run before commit; they are not after-commit callbacks.
+
+The Hook also receives actor, Entity identity, numeric Record ID, old/new snapshots, and changes. Related SDK writes run framework behavior such as Activity, but do not re-enter Business App Hooks. Use explicit `AsActor` when related operations must enforce a User's access scope.
+
+Submitted secret Field values are withheld from Hooks, including collection secrets. Hooks cannot inject secret values through `Input`. Keep collection structure and order unchanged when secret metadata is present; use explicit Record operations for structural changes.
+
+`hook.Jobs.Enqueue` queues durable work in the same transaction. Hooks also receive Timeline and Notifications services. See [App SDK](/reference/sdk/) for the complete service inventory and explicit secret decryption rules.

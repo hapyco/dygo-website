@@ -1,0 +1,68 @@
+---
+title: Configuration
+description: Configure HTTP, encrypted database credentials, queues, and optional SMTP.
+---
+
+Project-aware commands discover `dygo.yml` by walking upward from the current directory. Configuration references secret names; plaintext credentials belong in encrypted environment files.
+
+## Project configuration
+
+```yaml title="dygo.yml"
+name: my-system
+server:
+  host: 127.0.0.1
+  port: 6790
+database:
+  driver: postgres
+  url:
+    secret: DATABASE_URL
+```
+
+Defaults are `127.0.0.1`, port `6790`, and the `postgres` driver. The database URL has no plaintext default in configuration. Generated projects seed a development credential separately.
+
+The supported environments are `development`, `staging`, and `production`. Select one with a command's `--env` flag. Short forms such as `prod` are invalid. There are no general `DYGO_` runtime configuration overrides; installer variables are a separate contract.
+
+## Queues
+
+```yaml title="config/queues.yml"
+queues:
+  - name: default
+    concurrency: 4
+  - name: email
+    concurrency: 2
+```
+
+Queue names use kebab-case; concurrency must be positive. Jobs must reference a registered queue. The queue file is required for migration, Doctor, Jobs, Schedules, and Workers.
+
+```sh title="Terminal"
+dygo worker --queue email
+```
+
+Omit `--queue` to process all registered queues. See [Jobs and Workers](/background/jobs-and-workers/).
+
+## Optional SMTP
+
+```yaml title="dygo.yml email section"
+email:
+  from: notifications@example.com
+  smtp:
+    host: smtp.example.com
+    port: 587
+    username:
+      secret: SMTP_USERNAME
+    password:
+      secret: SMTP_PASSWORD
+```
+
+When email is configured, sender, host, and port are required. Username and password references are optional but must be configured together. The Worker uses STARTTLS when the SMTP server offers it. Configure a server and transport policy appropriate for your deployment.
+
+Email delivery runs as background work. Run a Worker and monitor failed executions. See [Logs and notifications](/run/logs-and-notifications/).
+
+## Validate changes
+
+```sh title="Terminal"
+dygo secret validate
+dygo doctor
+```
+
+Unknown YAML keys, duplicate keys, invalid ports, and missing referenced secrets are rejected. Check the [versioned configuration contract](https://github.com/hapyco/dygo/blob/v0.0.6/docs/config.md) before adding a new configuration key.
