@@ -1,112 +1,155 @@
 ---
 title: CLI reference
-description: Find the current dygo project, metadata, database, runtime, Job, and secret commands.
+description: Current commands, flags, output behavior, and safe automation conventions.
 ---
 
-dygo commands use `development` by default. Write commands that benefit from review print a plan and prompt. Use `--dry-run` to preview and `--yes` for a reviewed non-interactive run.
+This reference targets [v0.0.6](/reference/status/). Use `dygo <command> --help` to inspect the binary you actually installed. Environment-aware commands default to `development`; use full names `staging` and `production`.
 
-## Project
+For projects with App Hooks, Jobs, or actions, run runtime commands through the compiled project runner (`go run ./cmd/dygo <command>` during development). The command names below are shared by that runner and the stock CLI; the stock binary does not contain your App Go code. See [App SDK](/reference/sdk/#run-compiled-app-behavior).
 
-| Command | Purpose |
+## Project and runtime
+
+| Command | Purpose and useful flags |
 | --- | --- |
-| `dygo new <name>` | Create a project. |
-| `dygo upgrade` | Update managed project files and Studio assets. |
-| `dygo version` | Print the binary version. |
-| `dygo doctor` | Diagnose project readiness. |
-| `dygo setup` | Create the first Administrator. |
-| `dygo dev` | Run the local server and Studio development path. |
-| `dygo serve` | Run the HTTP server. |
-| `dygo worker` | Process Jobs and due Schedules. |
+| `dygo new <name>` | Create a project; `--module`, `--skip-tidy`. |
+| `dygo upgrade` | Upgrade to the running binary; `--check`, `--dry-run`, `--to`, `--yes`. |
+| `dygo version` | Print binary version information. |
+| `dygo doctor` | Diagnose project readiness; `--env`. |
+| `dygo setup` | Bootstrap the Administrator; `--email`, `--full-name`, `--password-stdin`, `--env`. |
+| `dygo dev` | Run local server and Studio; `--env`, `--studio-dev-url`. |
+| `dygo serve` | Run HTTP without workers; `--env`. |
+| `dygo worker` | Process Jobs and due Schedules; see below. |
+
+`new` resolves Go dependencies unless `--skip-tidy` is set. Upgrade requires a clean Git worktree. `--to` must match the running binary's embedded version; update the binary first.
 
 ## Generate
 
-`dygo g` is an alias for `dygo generate`.
+`dygo g` aliases `dygo generate`. Generators write non-interactively, support `--dry-run`, and use `--force` only for files identified as generated. Developer-owned Go and Vue source is preserved.
 
-| Command | Purpose |
+| Command | Output |
 | --- | --- |
-| `dygo generate app <app>` | Create an App skeleton. |
-| `dygo generate entity <app>/<entity>` | Create a standard Entity bundle. |
-| `dygo generate collection <app>/<collection>` | Create collection-row metadata. |
-| `dygo generate hook <app>/<entity>` | Add Hook code and runner wiring. |
-| `dygo generate job <app>/<job>` | Add Job metadata, handler code, and runner wiring. |
-| `dygo generate fixture <app>/<entity>` | Add a Fixture skeleton. |
-| `dygo generate test <app>/<entity>` | Add Go test boilerplate. |
+| `dygo generate app <app>` | App skeleton; `--no-access` skips access metadata. |
+| `dygo generate entity <app>/<entity>` | Entity, access, and Fixture skeletons; `--no-access`, `--no-fixture`. |
+| `dygo generate collection <app>/<collection>` | Collection metadata only. |
+| `dygo generate hook <app>/<entity>` | Hook scaffold and runner wiring. |
+| `dygo generate job <app>/<job>` | Job metadata, Go handler, and runner wiring. |
+| `dygo generate page <app>/<page>` | Page YAML, Vue starter, and Page access; `--no-access`. |
+| `dygo generate fixture <app>/<entity>` | Fixture skeleton. |
+| `dygo generate test <app>/<entity>` | Go test boilerplate. |
 
-Generators support `--dry-run`. They do not overwrite custom files. `--force` can replace files that dygo identifies as generated.
+Entity generation does not create Hooks or tests. `--no-hook` and `--no-test` are not flags in this release.
 
-## Validate and inspect
+## Apps, Entities, routes, and Hooks
 
-```sh title="Terminal"
+```sh title="Inspect and validate"
 dygo app list
 dygo app validate
+dygo app install https://github.com/acme/dygo-crm.git --dry-run
 
 dygo entity list
 dygo entity validate
 dygo entity show crm/contact
+dygo entity graph
 dygo entity graph crm
+dygo entity graph crm/contact
 
 dygo route list
 dygo route validate
 dygo route resolve GET /contact/example
+dygo route reserved
 
 dygo hook list
 dygo hook validate
-dygo hook sync
+dygo hook sync --dry-run
 ```
 
-## Database
+The App repository URL above is a placeholder. Install requires `app.yml` at the repository root and dependencies already present. It copies source without Git metadata and updates runner wiring; it never migrates a database. Remove `--dry-run` to install after review, or add `--yes` for an approved non-interactive installation.
+
+`hook sync` updates generated Hook and Job runner wiring. It does not create behavior files. Routes include both Entities and Pages.
+
+## Database lifecycle
 
 | Command | Purpose |
 | --- | --- |
-| `dygo db check` | Check PostgreSQL connectivity. |
+| `dygo db check` | Check connectivity. |
 | `dygo db create` | Create the configured database. |
-| `dygo db prepare` | Create when missing, then migrate, apply access, and apply Fixtures. |
-| `dygo db migrate` | Apply Patches and safe metadata schema changes. |
-| `dygo db prune` | Remove approved metadata-orphaned objects. |
-| `dygo db reset` | Drop and rebuild the configured database. |
+| `dygo db prepare` | Create if missing, then run the migration lifecycle. |
+| `dygo db migrate` | Apply App state, Patches, metadata, access, and Fixtures in one transaction. |
+| `dygo db prune` | Explicitly remove metadata-orphaned schema objects. |
+| `dygo db reset` | Drop, create, and prepare the database. |
 | `dygo db drop` | Drop the configured database. |
 
-`drop`, `reset`, and `prune` can destroy data. Protected environments require `--force` for destructive commands.
+Use `--dry-run` to review supported write plans and `--yes` to accept reviewed runtime writes without prompting. Drop, reset, and prune destroy data; protected environments require `--force`. Read-only checks and previews do not need `--force`.
+
+`migrate` requires an existing database. Use `prepare` when it is missing. A committed migration can still report a later schema-snapshot failure; inspect that message before retrying. See [Database](/run/database/).
 
 ## Access and Fixtures
 
 ```sh title="Terminal"
 dygo access validate
-dygo access apply
 dygo access list
+dygo access list crm
+dygo access show crm/contact
 dygo access roles
+dygo access roles crm
+dygo access explain crm/contact --user person@example.com --action read --record 42
+dygo access export --in crm --dry-run
+dygo access export crm/contact --in crm --dry-run
 
 dygo fixture validate
-dygo fixture apply
-dygo fixture export crm/contact
+dygo fixture export crm/contact --dry-run
+dygo fixture export crm/contact --include-links
 ```
 
-## Jobs
+Access export requires `--in`. Exports support `--env`, `--dry-run`, and `--yes`. `access apply` and `fixture apply` do not exist; apply both through `db migrate`.
+
+## Jobs and Workers
 
 ```sh title="Terminal"
 dygo job list
 dygo job show crm/send-welcome-email
 dygo job disable crm/send-welcome-email
 dygo job enable crm/send-welcome-email
-
-dygo job execution run crm/send-welcome-email --payload '{}'
-dygo job execution list
+dygo job execution run crm/send-welcome-email --payload '{}' --idempotency-key welcome:42
+dygo job execution list --limit 50
 dygo job execution show <id-or-name>
 dygo job execution cancel <id-or-name>
-dygo job execution retry <id-or-name> --idempotency-key <key>
+dygo job execution retry <id-or-name> --idempotency-key retry:42
 ```
 
-`dygo job exec` is a short alias for `dygo job execution`.
+`job exec` aliases `job execution`. Commands use the selected environment database. Run queues work; it does not invoke the handler inline. Cancel only affects queued work; retry creates a fresh execution from a failed one.
+
+```sh title="Worker examples"
+dygo worker
+dygo worker --once
+dygo worker --queue default --concurrency 4
+dygo worker --poll-only --poll-interval 60s
+```
+
+Repeat `--queue` to select multiple queues. `--once` checks due Schedules, processes one available batch, and exits. Serve and worker are separate production processes.
 
 ## Secrets
 
 ```sh title="Terminal"
 dygo secret init
-dygo secret edit
+dygo secret edit --editor "code --wait"
 dygo secret get DATABASE_URL
-dygo secret validate
+dygo secret validate --env production
 dygo secret rotate-key
+
+dygo secret record-key init --env development --dry-run
+dygo secret record-key init --env development --yes
 ```
+
+`secret get` writes the raw value to stdout. Keep it out of captured logs. Secret names can use dot-separated paths. `rotate-key` prompts and supports `--yes`; it has no `--dry-run` in v0.0.6.
+
+Record-key rotation requires stopped writers and backups. Follow the complete [rotation procedure](/run/secrets/#record-encryption-keys) before using `dygo secret record-key rotate --offline`.
+
+## Output and automation
+
+In the verified release, `dev` writes its backend ready URL to stdout and diagnostics, Studio startup details, and Vite output to stderr. Displayed loopback URLs use `localhost`. `secret get` reserves stdout for the raw secret. Errors go to stderr.
+
+There is no global `--json` contract. Do not parse decorative progress or assume every command accepts the same flags. Use command exit status and the documented result contract. A reviewed `--yes` replaces runtime confirmation where the command supports it; generators are already non-interactive.
 
 ## Shell completion
 
@@ -116,3 +159,5 @@ dygo completion zsh
 dygo completion fish
 dygo completion powershell
 ```
+
+These generate shell completion scripts. Context-aware Entity, App, and environment completion remains planned.

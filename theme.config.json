@@ -56,20 +56,25 @@
             "build-apps/entities",
             "build-apps/access",
             "build-apps/fixtures",
-            "build-apps/hooks"
+            "build-apps/hooks",
+            "build-apps/actions-and-pages",
+            "build-apps/patches"
           ]
         }
       ]
     },
     {
-      "label": "Run dygo",
+      "label": "Run Dygo",
       "items": [
         {
-          "label": "Run dygo",
+          "label": "Run Dygo",
           "items": [
+            "run/configuration",
             "run/database",
             "run/server-and-studio",
-            "run/secrets"
+            "run/secrets",
+            "run/logs-and-notifications",
+            "run/troubleshooting"
           ]
         }
       ]
@@ -93,6 +98,7 @@
           "label": "Reference",
           "items": [
             "reference/cli",
+            "reference/sdk",
             "reference/record-api",
             "reference/project-structure",
             "reference/status"

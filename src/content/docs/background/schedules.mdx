@@ -1,34 +1,56 @@
 ---
 title: Schedules
-description: Create recurring Job Executions from app-owned cron metadata.
+description: Define recurring Jobs with explicit cron metadata and understand missed occurrences.
 ---
 
-A Schedule creates a normal Job Execution when its cron expression becomes due. Workers check Schedules and enqueue the corresponding Job with a stable occurrence key.
+A Schedule enqueues normal Job Executions. Workers check due Schedules and process the resulting work. `dygo serve` does not run a scheduler.
 
-## File location
+## Define a Schedule
 
-App Schedules live in:
-
-```text
-apps/<app>/jobs/_schedules.yml
+```yaml title="apps/crm/jobs/_schedules.yml"
+schedules:
+  - name: weekly-report
+    label: Weekly Report
+    description: Send the weekly CRM report.
+    cron: "0 9 * * MON"
+    timezone: UTC
+    job: crm/send-weekly-report
+    enabled: true
 ```
 
-## Runtime rule
+Define and register the target Job before migrating. Schedule names are App-local kebab-case keys. Label, cron, timezone, and target Job are required. `enabled` defaults to true.
 
-Run a Worker process for Schedules to fire:
+Use a five-field cron expression and an IANA timezone. Seconds, `@every`, and inline `CRON_TZ=`/`TZ=` directives are not supported. Schedules do not accept custom payloads; use distinct Jobs when behavior differs.
+
+## Use a Job cron shortcut
+
+For one UTC schedule, add `cron` to `job.yml`:
+
+```yaml title="job.yml"
+label: Send Weekly Report
+timeout: 30s
+cron: "0 9 * * MON"
+```
+
+Migration creates a file-backed Schedule named `job-<job-key>` in the same App. Do not also define that key in `_schedules.yml`. Use the full Schedule file for other timezones or multiple schedules per Job.
+
+## Apply and run
 
 ```sh title="Terminal"
-dygo worker
+go run ./cmd/dygo db migrate
+go run ./cmd/dygo worker
 ```
 
-`dygo serve` does not process due Schedules.
+Migration syncs file-owned Schedules. Removing one retires its runtime row; restoring it and migrating makes it active again. Removing a Job's `cron` retires the generated Schedule on the next migration.
 
-## Durable execution
+## Missed and repeated occurrences
 
-Schedule occurrences use the same Job Execution model as manually queued work. This keeps payloads, status, attempts, errors, and timing in one operating path.
+The occurrence key includes App, Schedule name, and due time. Rechecking that occurrence does not enqueue duplicates.
 
-The occurrence idempotency key includes the App, Schedule name, and due time. Rechecking the same due occurrence does not create duplicate work.
+If a Worker was down across several occurrences, Dygo creates **one late execution**, then advances to the next future cron time. It does not backfill every missed occurrence. A disabled target Job prevents enqueueing, records an error, and advances the Schedule.
+
+Workers wake on notifications, due timestamps, or the fallback poll interval. No separate `dygo scheduler` process or operating-system cron is required.
 
 ## Current boundary
 
-Schedules are file-owned metadata. Specialized Studio Schedule management screens are planned.
+Schedules are file-owned metadata. Studio creation/editing screens, natural-language helpers, interval rules, one-time triggers, holiday calendars, and dedicated Schedule CLI commands remain planned.

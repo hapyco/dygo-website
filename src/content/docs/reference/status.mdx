@@ -1,51 +1,55 @@
 ---
 title: Framework status
-description: See which dygo capabilities exist now and which ones remain planned.
+description: The verified release baseline and the boundary between implemented and planned features.
 ---
 
-dygo is in early framework development. APIs, commands, and file formats can change before the first stable release.
+These guides are verified against **[Dygo v0.0.6](https://github.com/hapyco/dygo/releases/tag/v0.0.6)**, published September 22, 2026. Dygo is in early development; APIs, commands, metadata, and operating procedures can change before a stable release.
 
-## Current
+## Available in the verified release
 
-The current framework includes:
+- Project generation, App repository installation, and managed project upgrades.
+- App, Entity, Field, Page, access, Fixture, Job, Schedule, and Patch metadata.
+- One transactional database migration lifecycle for App state, Patches, metadata, access, and Fixtures.
+- Session login, Administrator bootstrap, roles, row conditions, and Field restrictions.
+- Record CRUD, Single Entities, parent-owned collections, Tree Entities, and private/system Entity boundaries.
+- Compiled Record Hooks, Entity actions, and the [public App SDK](/reference/sdk/).
+- Durable Jobs, retries, timeouts, cancellation, manual retry, and recurring Schedules.
+- App-owned Vue Pages, private saved filters, Record List/Tree views, command menu, and keyboard shortcuts in Studio.
+- File attachment and CSV import/export interfaces, comments, diagnostic Logs, and in-app notifications with optional email delivery. See the known limitations below before relying on imports or attachment creation.
+- Encrypted environment credentials and write-only encrypted Record secret Fields.
+- Job `cron` shortcuts in UTC and Entity form-tab metadata, added in v0.0.6.
 
-- project generation and upgrade support
-- App and Entity metadata
-- metadata validation and route inspection
-- PostgreSQL schema sync and explicit Patches
-- generic authenticated Record APIs
-- session login and one-Administrator bootstrap
-- flat role-based Entity permissions
-- app-owned Fixtures
-- compiled transactional Record Hooks
-- durable PostgreSQL-backed Jobs
-- Workers, retries, timeouts, and expired-lock recovery
-- recurring App Schedules
-- encrypted project secret files
-- first-party Studio login, navigation, Record lists, forms, details, and Activity
+A generic Record screen for a Job Execution is distinct from a dedicated Job operations dashboard. Bundled Vue Page support is available; independently packaged Page renderers have the limitation described below.
 
-## Planned
+## Still planned
 
-The following capabilities are not shipped:
+- Declarative Workflow metadata for approval states and transitions. Compiled Entity actions are available now.
+- Shared saved Views, grid/calendar/Gantt views, and a general Reports or dashboard framework. Apps can build their own Vue Pages.
+- Specialized Schedule creation/editing screens and richer Job operations screens.
+- OAuth, SSO, API keys, invitations, and password recovery.
+- Compliance audit controls and automatic production backups.
+- External queue backends, queue rate limits, retention policy, and dead-letter handling.
+- Dynamic Go Hook loading and general public SDK config, secret, or metadata services.
+- A consistent global CLI `--json` output mode and context-aware completion.
 
-- Workflow actions, approvals, and state transitions
-- row-level sharing and ownership rules
-- Field-level permissions
-- saved Views
-- custom Studio Pages
-- Reports and dashboards
-- specialized Studio Job and Schedule screens
-- OAuth, SSO, API keys, invitations, and password recovery
-- compliance audit controls
-- automatic production backups
-- external queue backends
-- queue rate limits, retention policy, and dead-letter handling
-- dynamic Go Hook loading
+## Known limitations in the audited baseline
 
-## Installation status
+These framework issues describe failures found in the audited source. Their presence in the UI or SDK is not a guarantee that the affected workflow succeeds. Follow the issue and release notes for a verified fix.
 
-The public installers at `https://dygo.dev/install` and `https://dygo.dev/install.ps1` redirect to the installers from the latest GitHub Release. They need a published release for the current platform.
+| Area | Tracked limitation |
+| --- | --- |
+| CSV imports | Queued imports can fail at system Record bookkeeping ([#293](https://github.com/hapyco/dygo/issues/293)); status counts also need correction ([#295](https://github.com/hapyco/dygo/issues/295)). |
+| Attachments | Studio upload on Single Entities is blocked ([#290](https://github.com/hapyco/dygo/issues/290)); required attachments cannot complete new Record creation ([#291](https://github.com/hapyco/dygo/issues/291)). |
+| Forms | Defaults-only creation and clearing optional typed values need fixes ([#289](https://github.com/hapyco/dygo/issues/289)). |
+| Record concurrency | Snapshot locking and random-name collision retry need correction ([#292](https://github.com/hapyco/dygo/issues/292), [#288](https://github.com/hapyco/dygo/issues/288)). |
+| Access edge cases | Proposed updates must preserve system ID ([#296](https://github.com/hapyco/dygo/issues/296)); fetched-Field traversal needs a defined target access policy ([#297](https://github.com/hapyco/dygo/issues/297)). |
+| Process lifecycle | Long-operation feedback, Worker failure draining, Git subprocess cancellation, and pending confirmations are being addressed ([#287](https://github.com/hapyco/dygo/issues/287), [#294](https://github.com/hapyco/dygo/issues/294), [#298](https://github.com/hapyco/dygo/issues/298), [#299](https://github.com/hapyco/dygo/issues/299)). |
+| App Pages | Bundled Vue Pages work, but independently packaged renderer discovery and a versioned extension workflow remain open ([#265](https://github.com/hapyco/dygo/issues/265)). |
 
-## Documentation rule
+## Upcoming CLI release
 
-Pages in this site describe current behavior unless a section says **planned**, **proposed**, or **coming soon**. If source code and an older design note disagree, current runtime behavior wins.
+CLI progress, lifecycle messages, or release changes under active development are not promised by this baseline. Check `dygo version` and the [published release notes](https://github.com/hapyco/dygo/releases) before adopting new behavior. An unreleased source change is not an installed binary feature.
+
+## Verification boundary
+
+The documentation audit compared the release source with framework commit `ff499ea75066618cb1bdcb57f88adc46f57da2ec`. Public SDK files, registered Record routes, migration lifecycle, project generation, and CLI reference behavior matched the release at that checkpoint. Examples are based on implemented contracts; this does not claim that every production deployment or integration has been tested.

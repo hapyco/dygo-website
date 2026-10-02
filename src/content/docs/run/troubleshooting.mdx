@@ -1,0 +1,88 @@
+---
+title: Troubleshooting
+description: Resolve installation, project, database, Studio, and Worker failures without losing data.
+---
+
+Start with `dygo version` and run `dygo doctor` inside the project. Record the exact failing command, selected environment, and error. Remove secrets before sharing output.
+
+## The shell cannot find Dygo
+
+The managed Unix binary normally lives in `~/.dygo/bin`. Add that directory to `PATH` using the installer's instructions, then open a new shell. Use `command -v dygo` on macOS/Linux or `Get-Command dygo` in PowerShell to check which binary is selected. An older binary earlier on PATH can mask a successful installation.
+
+## The installer fails
+
+Confirm that the requested tag and platform asset exist on [GitHub Releases](https://github.com/hapyco/dygo/releases). Check connectivity and write access to the destination. Use a writable `DYGO_INSTALL_DIR` when needed.
+
+If checksum or embedded-version verification fails, stop using that download and retry from the official release. Do not bypass verification. Keep the existing binary until a verified replacement succeeds.
+
+## Project creation or runner compilation fails
+
+Check Go 1.26.2 or later and access to the project's Go dependencies. Generation runs `go mod tidy`. If you intentionally used `--skip-tidy`, run it in the generated project before starting the runner.
+
+A development build cannot always resolve a release module version outside the framework checkout. Use a published release for normal projects. Do not work around an unknown version by guessing a module tag.
+
+For missing compiled Hooks or Jobs:
+
+```sh title="Terminal"
+dygo hook validate
+dygo hook sync --dry-run
+dygo hook sync
+dygo doctor
+```
+
+Rebuild or use `go run ./cmd/dygo dev` after changing App Go code. Use `go run ./cmd/dygo worker` for App Jobs. The stock global binary does not automatically invoke the project runner; there is no dynamic Go loading.
+
+## PostgreSQL is unavailable
+
+Confirm that the server is running and the selected environment has the intended `DATABASE_URL`. Inspect it in the editor rather than printing it into logs:
+
+```sh title="Terminal"
+dygo secret edit
+dygo secret validate
+```
+
+Check host, port, user authentication, and database permissions. The generated local URL may need credentials for your PostgreSQL setup. `db check` requires the target database to exist. `db prepare` can create it when the role has creation permission; otherwise ask the database administrator to provision it first.
+
+## Migration rejects a change
+
+```sh title="Terminal"
+dygo db migrate --dry-run
+```
+
+| Diagnostic | Next step |
+| --- | --- |
+| Missing database | Use `db prepare`, or provision it first. |
+| Type or required-Field drift | Repair/backfill through an explicit Patch. |
+| Extra table, column, index, or constraint | Restore metadata or review a deliberate `db prune`. |
+| Unique or check constraint failure | Repair existing data before applying the rule. |
+| Patch checksum mismatch | Restore the applied Patch; add a new Patch for a new transition. |
+| Access or Fixture failure | Fix the source; the migration transaction rolls back. |
+| Migration committed; snapshot failed | The database is already changed. Repair snapshot output and inspect the committed state. |
+
+Do not use `db reset` as a general repair command: it destroys the configured database. Do not edit an applied Patch to suppress a checksum failure.
+
+## Upgrade refuses to run
+
+Commit or stash project changes. Run `dygo upgrade --check` and `--dry-run`. The target must match the binary you installed; `--to` does not download a binary. Follow [the full update sequence](/start-here/installation/#update-an-existing-project), including metadata migration.
+
+## Studio is blank or unavailable
+
+Check the ready URL and server diagnostics. Run Doctor to validate Studio assets. Generated projects use managed cached release assets; custom Vue Pages require a compatible Studio UI build. In a framework source checkout, local development can start Vite. An explicitly supplied `--studio-dev-url` must point to a reachable development server.
+
+If login succeeds but an Entity or Page is missing, validate access and apply migration. Page access and Record access are separate. User-role assignment is runtime data; a role definition does not assign Users automatically.
+
+## Jobs stay queued or Schedules do not fire
+
+`dygo serve` does not process Jobs or Schedules. Run `dygo worker` with the same environment. Confirm the queue exists in `config/queues.yml`, the Job is enabled, metadata is migrated, and its handler is compiled into the runner.
+
+```sh title="Terminal"
+dygo job show crm/send-welcome-email
+dygo job execution list
+dygo job execution show <id-or-name>
+```
+
+`worker --once` processes one batch; it is not a continuously running Worker. A missed Schedule creates one late occurrence, not a backlog of every missed time. Retry failed executions with a fresh idempotency key after fixing the cause.
+
+## Secret keys are missing
+
+Restore `.dygo/secrets/master.key` from secure backup. Generating a different key cannot decrypt existing environment files. Record secret Fields additionally need their environment's Record key. Follow [Record encryption keys](/run/secrets/#record-encryption-keys); do not replace an existing key ring to make an error disappear.

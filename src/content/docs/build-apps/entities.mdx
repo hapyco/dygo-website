@@ -11,12 +11,12 @@ An Entity defines the structure of a business Record. dygo reads Entity YAML dur
 dygo generate entity crm/contact
 ```
 
-The standard generator creates Entity metadata, access metadata, a Fixture skeleton, Hook scaffolding, a test file, and project runner wiring.
+The standard generator creates Entity metadata, access metadata, and a Fixture skeleton. Generate Hook code and tests separately with `dygo generate hook crm/contact` and `dygo generate test crm/contact`.
 
 Skip parts that the Entity does not need:
 
 ```sh title="Terminal"
-dygo generate entity crm/contact --no-hook --no-fixture --no-test
+dygo generate entity crm/contact --no-access --no-fixture
 ```
 
 ## Define the metadata
@@ -66,7 +66,7 @@ Every Record has:
 - `created-at`
 - `updated-at`
 
-Normal Entities support `random`, `manual`, `format`, and `series` naming strategies.
+Normal Entities require a `name` section and support `random`, `manual`, `format`, and `series` naming strategies. Use `name.strategy: random` when you do not need a business naming rule.
 
 Use a series for ordered business identifiers:
 
@@ -142,3 +142,74 @@ dygo entity graph crm
 ```
 
 Validation checks file identity, Field types, links, collections, route conflicts, and Hook conventions before PostgreSQL changes.
+
+## Field types
+
+Attachment creation has [known Studio limitations](/reference/status/#known-limitations-in-the-audited-baseline), particularly for required attachments and Single Entities.
+
+The current storage-backed types are `text`, `email`, `phone`, `password`, `secret`, `long-text`, `int`, `bigint`, `decimal`, `currency`, `boolean`, `date`, `datetime`, `time`, `select`, `link`, `attachment`, and `json`. `collection` represents parent-owned child arrays.
+
+Passwords are hashed and write-only. Secrets are encrypted and write-only; they require [Record encryption keys](/run/secrets/#record-encryption-keys). Neither type may be used as a normal filter, sort, index, or naming Field. App-defined Field types in YAML are not supported.
+
+## Single, private, and system Entities
+
+`is-single: true` defines one framework-owned settings Record. Migration seeds it; Studio opens its form directly. Required stored Fields need non-null defaults. A Single Entity cannot define its own naming strategy or serve as a Link/collection target.
+
+`is-private: true` with `private-owner-field` defines owner-scoped App state. The owner Field must be a Link. Private Entities stay out of generic metadata and Record routes; use `Records.AsPrivate(actor, reason)` in trusted services.
+
+`is-system: true` makes an Entity read-only through ordinary CRUD, Studio, Fixtures, and imports, including Administrator and `AsSystem` calls. App code uses its scoped `Records.System(reason)` writer or a post-sync system Record Patch. See [App SDK](/reference/sdk/).
+
+## Tree Entities
+
+```yaml title="department.entity.yml"
+label: Department
+name:
+  strategy: random
+tree:
+  parent-field: parent
+  label-field: title
+fields:
+  - name: title
+    label: Title
+    type: text
+  - name: parent
+    label: Parent
+    type: link
+    index: true
+    options:
+      entity: department
+```
+
+The parent must be an optional, indexed Link to the same Entity, with its foreign key enabled. It cannot have a default, fetch rule, or uniqueness rule. A null parent makes a root. Single and collection Entities cannot be Trees.
+
+Self-parenting and cycles are rejected. Move or delete children before deleting their parent. Tree relationships never grant Record permissions. Use normal Record writes to create and move nodes; the [SDK](/reference/sdk/#tree-records) and [HTTP API](/reference/record-api/#tree-queries) provide hierarchy reads.
+
+## Form tabs and layout
+
+Use either top-level `fields` or `tabs`. This layout became available in v0.0.6:
+
+```yaml title="contact.entity.yml layout example"
+label: Contact
+name:
+  strategy: random
+tabs:
+  - tab: Details
+    name: details
+    fields:
+      - name: full-name
+        label: Full Name
+        type: text
+      - type: column
+      - name: email
+        label: Email
+        type: email
+      - type: section
+        label: Notes
+      - name: notes
+        label: Notes
+        type: long-text
+```
+
+Each tab needs a label, unique kebab-case name, and non-empty Fields. `column` and `section` are layout markers, not database Fields. A section needs a label. Storage Field names stay unique across all tabs; API, constraints, and access rules use those same keys.
+
+For defaults, checks, Link filters, fetch rules, collection conventions, and complete metadata examples, consult the [versioned Entity contract](https://github.com/hapyco/dygo/blob/v0.0.6/docs/entity-metadata.md).

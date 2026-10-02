@@ -1,61 +1,88 @@
 ---
 title: Installation
-description: Install or update the dygo release binary on macOS, Linux, or Windows.
-sidebar:
-  order: 2
+description: Install a verified Dygo release and update a generated project.
 ---
 
-dygo release binaries are distributed through GitHub Releases. The installer downloads the archive for the current platform and verifies its SHA-256 checksum.
+Dygo distributes binaries for macOS, Linux, and Windows on [GitHub Releases](https://github.com/hapyco/dygo/releases). These guides have been checked against **v0.0.6**. See [Framework status](/reference/status/) for the release boundary.
 
-:::caution[Release status]
-dygo is in early development. The installer needs a published GitHub Release for your platform. Do not assume that a stable release exists.
-:::
+## Before you install
+
+Install Git and Go **1.26.2 or later** for generated projects. The release binary contains the CLI and Studio assets, but project generation runs `go mod tidy` and the project runner compiles App code. You also need a running PostgreSQL server for Record storage.
+
+The release assets support `amd64` and `arm64` on all three operating systems. The Unix installer needs `curl` or `wget`, `tar`, and a supported SHA-256 tool. Install into a directory your account can write.
 
 ## macOS and Linux
-
-Run the public installer:
 
 ```sh title="Terminal"
 curl -fsSL https://dygo.dev/install | sh
 ```
 
-The managed binary goes to `~/.dygo/bin`. If that directory is not on `PATH`, the installer prints the shell profile line to add.
+The installer downloads the platform archive, verifies its checksum and embedded version, then replaces the managed binary in `~/.dygo/bin`.
+
+If the directory is missing from `PATH`, add the line printed by the installer to your shell profile. For the current shell:
+
+```sh title="Terminal"
+export PATH="$HOME/.dygo/bin:$PATH"
+dygo version
+```
 
 ## Windows PowerShell
 
 ```powershell title="PowerShell"
 irm https://dygo.dev/install.ps1 | iex
+dygo version
 ```
 
-## Install a specific version
+Follow the installer's PATH instructions, then open a new terminal if needed.
 
-Set `DYGO_VERSION` before the shell runs the installer:
+## Pin a version or directory
+
+Choose a tag that exists on the releases page:
 
 ```sh title="Terminal"
-curl -fsSL https://dygo.dev/install | DYGO_VERSION=v0.1.0 sh
+curl -fsSL https://dygo.dev/install | DYGO_VERSION=v0.0.6 sh
 ```
 
-Replace `v0.1.0` with an available release tag.
-
-## Use a custom install directory
+Use `DYGO_INSTALL_DIR` to change the destination:
 
 ```sh title="Terminal"
-curl -fsSL https://dygo.dev/install | DYGO_INSTALL_DIR=/usr/local/bin sh
+curl -fsSL https://dygo.dev/install | DYGO_INSTALL_DIR="$HOME/bin" sh
 ```
 
-## Update the binary
+PowerShell reads the same environment variables. Set them before invoking the installer:
 
-Run the installer again to update the binary. Then update a generated project:
+```powershell title="PowerShell"
+$env:DYGO_VERSION = 'v0.0.6'
+irm https://dygo.dev/install.ps1 | iex
+Remove-Item Env:DYGO_VERSION
+```
+
+## Update an existing project
+
+Commit or stash your project changes first. Project upgrades refuse a dirty Git worktree. Back up production data before applying metadata changes.
+
+Update the CLI outside the project, then review the project upgrade:
 
 ```sh title="Terminal"
+curl -fsSL https://dygo.dev/install | sh
+dygo version
+cd my-system
 dygo upgrade --check
+dygo upgrade --dry-run
 dygo upgrade
 ```
 
-`dygo upgrade` updates the dygo dependency, managed runner files, and cached Studio assets. It refuses to update a dirty Git worktree.
+`upgrade` updates the project's Dygo dependency, managed runner files, tracked Core and Studio metadata, and cached Studio UI when the target version differs. The target is the version embedded in the running binary. `--to` must match that binary; it does not download another release.
 
-Preview an update without writing files:
+Apply the updated metadata before starting the project:
 
 ```sh title="Terminal"
-dygo upgrade --dry-run
+dygo db migrate --dry-run
+dygo db migrate
+dygo doctor
+dygo dev
 ```
+
+Use `--yes` only after reviewing the corresponding upgrade or migration plan. Updating the global binary alone does not upgrade a project's dependency.
+
+Homebrew and `go install` are not documented release installation paths. For installation, checksum, PATH, or upgrade failures, see [Troubleshooting](/run/troubleshooting/).

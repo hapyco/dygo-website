@@ -7,6 +7,8 @@ dygo uses PostgreSQL for framework metadata, business Records, Activity, Jobs, a
 
 Entity YAML is the schema source of truth. dygo plans database changes from metadata and stores a snapshot in `db/schema.sql`.
 
+If the App has compiled Hooks or Jobs, run migration through the [project runner](/reference/sdk/#run-compiled-app-behavior), for example `go run ./cmd/dygo db migrate`. The stock binary cannot validate or run App handlers that it does not contain.
+
 ## Check the connection
 
 ```sh title="Terminal"
@@ -35,20 +37,20 @@ dygo db prepare --dry-run
 dygo db migrate
 ```
 
-Migration applies pre-sync Patches, safe metadata schema changes, post-sync Patches, and a new schema snapshot.
+Migration revalidates the reviewed plan under a database lifecycle lock. It applies App state, pre-sync Patches, safe metadata changes, post-sync Patches, access metadata, and Fixtures in one transaction. A failure rolls back that transaction. After commit, it refreshes `db/schema.sql`; a snapshot failure does not undo the committed migration.
 
 dygo migration is additive. It does not infer unsafe operations such as table drops, Field renames, type conversions, or data backfills.
 
 ## Use explicit Patches
 
-Put an unsafe lifecycle change in an App-owned Patch. The Patch defines the order around metadata sync and keeps the decision in source control.
+Put an unsafe lifecycle change in an [App-owned Patch](/build-apps/patches/). The Patch defines the order around metadata sync and keeps the decision in source control. Patches are YAML operations; there is no public compiled Go Patch handler.
 
 Use Patches for:
 
 - Entity or Field renames
 - destructive type changes
 - data backfills
-- transitions that need custom SQL or Go behavior
+- transitions that need structured Patch operations or explicit SQL
 
 ## Remove orphaned schema
 

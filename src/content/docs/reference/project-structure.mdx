@@ -43,13 +43,13 @@ my-system/
 
 Business metadata and Go behavior live under `apps/`. The application owns these files.
 
-`cmd/dygo/main.go` is the project runner. Generators wire compiled Hook and Job packages into it.
+`cmd/dygo/main.go` is the project runner. Hook and Job generators wire their compiled packages into it. Entity generation creates metadata, access, and Fixtures only; Hooks and tests are optional separate scaffolds. Apps may also have `pages/<page>/` bundles and manifest-defined `patches/` directories.
 
 ## Generated and managed files
 
 `db/schema.sql` records the PostgreSQL schema snapshot after migration.
 
-`.dygo/apps/studio` caches the first-party Studio assets shipped with the running dygo version.
+`.dygo/apps/core` and `.dygo/apps/studio` contain tracked managed metadata. `.dygo/apps/studio/ui` contains cached Studio UI assets and is ignored by Git. Upgrade refreshes managed metadata and UI for the target release.
 
 ## Local private state
 

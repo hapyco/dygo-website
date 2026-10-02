@@ -5,6 +5,8 @@ description: Run dygo locally, serve the HTTP API, authenticate users, and open 
 
 dygo separates web serving from background Job processing. Run `serve` for HTTP traffic and `worker` for Jobs and Schedules in production.
 
+Use your [compiled project runner](/reference/sdk/#run-compiled-app-behavior) when the project contains Hooks, Jobs, or actions. The stock `dygo` binary cannot load App Go source. Replace `dygo` below with `go run ./cmd/dygo` during development, or your built project binary in production.
+
 ## Local development
 
 ```sh title="Terminal"
@@ -57,4 +59,23 @@ The `:name` segment is the Record system `name`, not its numeric `id`.
 
 Studio currently provides session login, App and Entity navigation, Record lists, Record forms, Record detail pages, and Record Activity.
 
-Specialized Job screens, Schedule screens, saved Views, custom Pages, and Reports are planned.
+Studio also supports App-owned Vue Pages, private saved filters, List/Tree views, attachments, imports, notifications, pinned navigation, and a command menu. Job Execution Records expose queued cancellation and failed retry actions. Dedicated Job and Schedule management screens, shared saved Views, and a general Reports framework remain planned. Imports, attachments, and some form operations have [known limitations](/reference/status/#known-limitations-in-the-audited-baseline) in the audited release.
+
+## Authentication routes
+
+```text
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+GET  /api/v1/auth/me
+GET  /api/v1/boot
+```
+
+Login accepts a `data` envelope with `email` and `password`. The server sets the session cookie; logout revokes it. `/health` and login are public. Boot, metadata, Record, and operating APIs require a valid session and their applicable permissions.
+
+## Filters, navigation, and keyboard controls
+
+List filters and sort are stored in the URL. Saved filters are private to the User and Entity; they do not store sort or display choices. List is the default view. Tree Entities also expose Tree view with lazy-loaded children and permission-aware ancestor context.
+
+Use Command K on macOS or Control K elsewhere for the command menu. Mod+S saves a Record form; Mod+Enter creates a Record from a list. Mod+/ opens the current keyboard shortcut reference. Unsaved forms require confirmation before navigation; a failed save preserves the draft.
+
+These are Studio application behaviors. The documentation website has its own navigation and search controls.

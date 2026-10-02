@@ -1,60 +1,104 @@
 ---
 title: Record API
-description: Understand the generic authenticated HTTP routes for metadata-backed Records.
+description: Authenticated HTTP routes, numeric IDs, query syntax, envelopes, and permission boundaries.
 ---
 
-The Record API operates on Entity metadata stored in Core. It supports normal routeable Entities and parent-owned collection rows.
+The Record API uses persisted Entity metadata and a valid `dygo_session` cookie. The server enforces the current User's Entity actions, row conditions, and Field restrictions.
 
-All Record routes require a valid session. The server checks the effective Entity permission for the current User before it reads or writes business data.
+## Identity and routes
 
-## Route identity
+`{entity}` is the globally unique Entity route slug. **`{id}` is the internal numeric Record ID.** Studio's visible Record URLs use a Record name, but HTTP mutation routes use the numeric ID.
 
-The API route uses the Entity route slug. Internal App code uses App and Entity identity.
-
-```text
-GET    /api/v1/records/:entity
-POST   /api/v1/records/:entity
-GET    /api/v1/records/:entity/:name
-PATCH  /api/v1/records/:entity/:name
-DELETE /api/v1/records/:entity/:name
+```text title="Record routes"
+GET    /api/v1/records/{entity}
+POST   /api/v1/records/{entity}
+GET    /api/v1/records/{entity}/{id}
+PATCH  /api/v1/records/{entity}/{id}
+DELETE /api/v1/records/{entity}/{id}
+GET    /api/v1/records/{entity}/name/{name}
+GET    /api/v1/records/{entity}/single
+PATCH  /api/v1/records/{entity}/single
+GET    /api/v1/records/{entity}/export
+POST   /api/v1/records/{entity}/actions/{action}
+GET    /api/v1/records/{entity}/{id}/activity
+POST   /api/v1/records/{entity}/{id}/activity
+GET    /api/v1/records/{entity}/{id}/secret-status
+GET    /api/v1/records/{entity}/tree/{operation}
 ```
 
-The `:name` value is the stable Record name. It is not the internal numeric `id`.
+URL-encode the stable Record name in `/name/{name}`. Single Entities use `/single` for reads and updates; normal list, create, and delete operations are rejected. Collection Entities have no standalone CRUD routes. Private Entities are excluded from the generic API. System Entities are read-only through ordinary CRUD, including Administrator requests.
 
-## Current operations
+## Request and response bodies
 
-The API supports:
+Create and update use a `data` envelope with metadata Field names:
 
-- list Records
-- read one Record
-- create a Record
-- update a Record
-- delete a Record
-- read and write Single Entity state
-- read Record Activity
-- write parent-owned collection rows through the parent Record
+```json title="Create a contact"
+{"data":{"email":"a@example.com","full-name":"A User"}}
+```
 
-## Hooks and transactions
+```json title="Record response"
+{"data":{"id":1,"name":"a@example.com","email":"a@example.com"}}
+```
 
-Create, update, and delete operations run the applicable Record Hooks in the same database transaction. A Hook error aborts the request and rolls back the write.
+```json title="List response"
+{"data":[],"meta":{"limit":50,"offset":0,"count":0}}
+```
 
-## Permission actions
+`meta.count` counts the returned page, not all matching Records. Errors have this shape:
 
-The server maps Record operations to current base actions:
+```json title="Error response"
+{"error":{"code":"validation_error","message":"required field is missing","details":{"field":"email"}}}
+```
 
-- `read`
-- `create`
-- `update`
-- `delete`
-- `export`
-- `print`
+Use kebab-case metadata keys such as `full-name`, not SQL column names. System Fields cannot be updated. Create accepts `name` only for `name.strategy: manual`.
 
-Row-level and Field-level access rules are not part of the current API.
+## Filter, sort, and paginate
 
-## Activity
+```text
+GET /api/v1/records/contact?limit=50&offset=0&status:eq=Lead&sort=-created-at,name
+GET /api/v1/records/invoice?amount:gte=10&amount:lte=100
+GET /api/v1/records/contact?name:contains=smith
+GET /api/v1/records/contact?closed-at:empty
+```
 
-Activity is append-only product history for a Record. It is not a compliance audit system.
+The default limit is `50`; the maximum is `2500`. Offset defaults to `0`. Sort defaults to `id ASC`. A leading minus selects descending order; Dygo adds `id ASC` as a deterministic tie-breaker unless already specified.
 
-## App code
+Filter and sort Fields must be visible and storage-backed. Write-only `password` and `secret` Fields and collection arrays cannot be used as ordinary query Fields. `limit`, `offset`, and `sort` are reserved query parameters.
 
-Compiled App Hooks and Jobs use the public `pkg/dygo` Record interface. That server-side App path uses App and Entity identity and does not re-enter normal HTTP permission checks.
+## Collection updates
+
+Detail and mutation responses include parent-owned collection arrays; list responses do not. On update, a submitted array replaces the desired child row set:
+
+- A row with `id` patches an existing row owned by that parent.
+- A row without `id` creates a child.
+- An existing child omitted from the array is deleted.
+- Array order becomes the saved row order.
+- Omitting the entire Field leaves it unchanged; `[]` clears an optional collection.
+
+Required collections need at least one row. Each collection Field accepts up to `500` rows. Parent deletion deletes its children in the same transaction.
+
+## Hooks, actions, and permissions
+
+Create, update, and delete run applicable [Record Hooks](/build-apps/hooks/) inside the write transaction. A Hook error rolls back the operation. Registered [Entity actions](/build-apps/actions-and-pages/) use their own action permission and transaction-scoped SDK services.
+
+Base permissions are `read`, `create`, `update`, `delete`, `export`, and `print`. Field denials and row conditions are enforced on the server; hiding a control in Studio is not an authorization rule.
+
+## Activity and secret presence
+
+Activity is append-only product history. Reads require a readable live target Record. Add a comment with `POST .../{id}/activity` and `{"message":"Follow up tomorrow"}`; this requires update permission. Activity lists default to newest first and use the normal pagination envelope. Activity is not a compliance audit system.
+
+`secret-status` reports presence without revealing plaintext or ciphertext:
+
+```json
+{"data":{"fields":{"token":true},"collections":{}}}
+```
+
+It follows normal read, row, and Field rules. There is no HTTP secret-reveal endpoint. See [Record encryption keys](/run/secrets/#record-encryption-keys).
+
+## Tree queries
+
+For a Tree Entity, `/tree/{operation}` supports `roots`, `children`, `descendants`, `ancestors`, `path`, and `search`. Operations other than `roots` and `search` require the anchor Record's `name` query parameter. Search can use `exclude-subtree` with a Record name. Results respect Record permissions; Tree relationships never grant access to hidden ancestors.
+
+## Related APIs
+
+Authenticated metadata routes include `/api/v1/apps`, `/api/v1/apps/{app}`, `/api/v1/entities`, `/api/v1/entities/{entity}/meta`, `/api/v1/pages`, and `/api/v1/pages/{app}/{page}`. The server also exposes files, CSV imports, notifications, and private Studio preference endpoints. Consult the [versioned route implementation](https://github.com/hapyco/dygo/tree/v0.0.6/internal/server) before building clients for those early interfaces.

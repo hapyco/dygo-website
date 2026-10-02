@@ -1,0 +1,76 @@
+---
+title: Actions and Pages
+description: Add compiled business actions and App-owned Vue Pages to Studio.
+---
+
+Use Entity actions for operations such as approving a request or retrying a failed import. Use Pages for an App-owned screen. Both contracts exist in the verified release; declarative Workflow metadata remains planned.
+
+## Register an Entity action
+
+```go title="App action registrar"
+package actions
+
+import (
+    "context"
+    "github.com/hapyco/dygo/pkg/dygo"
+)
+
+func Register(registry dygo.EntityActionRegistry) error {
+    return registry.RegisterEntity("crm", "contact", dygo.EntityActionDefinition{
+        Name: "review-contact",
+        Label: "Review contact",
+        Selection: dygo.ActionSelectionRecord,
+        Confirm: "Review this contact?",
+    }, func(ctx context.Context, call dygo.EntityActionCall) (any, error) {
+        // Validate input and implement the business operation here.
+        return map[string]any{"reviewed": false}, nil
+    })
+}
+```
+
+This skeleton registers the action but does not implement a business review. Wire its registrar into `pkg/dygo/runtime.Options.EntityActions` in the project runner. There is no `generate action` command or automatic action registrar discovery in v0.0.6. Build or run that [project runner](/reference/sdk/#run-compiled-app-behavior) to include your action; the stock binary does not include it.
+
+The selection modes are `record`, `selection`, and `collection`. Grant the registered action name in the Entity's access policy. The server authorizes the call and supplies actor, selected numeric Record IDs, JSON input, and transaction-scoped services. Set `Danger: true` for a destructive confirmation. Keep validation and business rules in the handler.
+
+An `ActionError` can return a stable code, message, and details. Do not include secrets in any returned data or error.
+
+## Generate a Page
+
+```sh title="Terminal"
+dygo generate page crm/overview
+```
+
+The command creates:
+
+```text
+apps/crm/pages/overview/overview.page.yml
+apps/crm/pages/overview/overview.vue
+apps/crm/access/overview.page.access.yml
+```
+
+```yaml title="overview.page.yml"
+label: CRM Overview
+description: The CRM team workspace.
+route:
+  path: /overview
+renderer: vue
+options: {}
+```
+
+A Page path is `/` or one kebab-case root path. It must not conflict with framework routes, another Page, or an Entity slug. The runtime Page name is `<app>.<key>`.
+
+`renderer: vue` loads the sibling Vue file. `renderer: entity-index` uses Studio's Entity index without a custom Vue file. The component receives a `page` prop containing identity, label, description, path, options, and owning App.
+
+## Build and authorize Pages
+
+Studio compiles Vue Pages present in its App source tree during development and production UI builds. A cached release UI cannot acquire new compiled Vue code by applying database metadata alone. A versioned renderer packaging and discovery workflow for independently installed Apps remains [open in #265](https://github.com/hapyco/dygo/issues/265). Do not assume a generated project can load an arbitrary new Page from its cached UI. See the [versioned Page guide](https://github.com/hapyco/dygo/blob/v0.0.6/docs/pages.md) for the current bundled-source contract.
+
+```sh title="Terminal"
+dygo route validate
+dygo access validate
+dygo db migrate
+```
+
+Page access controls opening the Page. Every Record request made by that Page still needs its own Entity, row, and Field permissions. Keep global CRUD behavior framework-owned.
+
+Studio lists App Pages in its sidebar, except Home. Users can pin a Page from its header. The generator preserves existing Vue source; `--force` refreshes generated YAML and access metadata only.
