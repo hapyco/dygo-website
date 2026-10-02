@@ -37,10 +37,10 @@ Follow the installer's PATH instructions, then open a new terminal if needed.
 
 ## Pin a version or directory
 
-Choose a tag that exists on the releases page:
+Choose a published tag and use the installer hosted on that same release. `DYGO_VERSION` pins the CLI binary and can also downgrade it; it does not change a project dependency:
 
 ```sh title="Terminal"
-curl -fsSL https://dygo.dev/install | DYGO_VERSION=v0.0.6 sh
+curl -fsSL https://github.com/hapyco/dygo/releases/download/v0.0.6/install.sh | DYGO_VERSION=v0.0.6 sh
 ```
 
 Use `DYGO_INSTALL_DIR` to change the destination:
@@ -53,7 +53,7 @@ PowerShell reads the same environment variables. Set them before invoking the in
 
 ```powershell title="PowerShell"
 $env:DYGO_VERSION = 'v0.0.6'
-irm https://dygo.dev/install.ps1 | iex
+irm https://github.com/hapyco/dygo/releases/download/v0.0.6/install.ps1 | iex
 Remove-Item Env:DYGO_VERSION
 ```
 
@@ -61,7 +61,7 @@ Remove-Item Env:DYGO_VERSION
 
 Commit or stash your project changes first. Project upgrades refuse a dirty Git worktree. Back up production data before applying metadata changes.
 
-Update the CLI outside the project, then review the project upgrade:
+Re-run the installer to update the CLI. Run it outside the project, then review the project upgrade:
 
 ```sh title="Terminal"
 curl -fsSL https://dygo.dev/install | sh
@@ -72,7 +72,7 @@ dygo upgrade --dry-run
 dygo upgrade
 ```
 
-`upgrade` updates the project's Dygo dependency, managed runner files, tracked Core and Studio metadata, and cached Studio UI when the target version differs. The target is the version embedded in the running binary. `--to` must match that binary; it does not download another release.
+`upgrade` updates the project's Dygo dependency, managed runner files, tracked Core and Studio metadata, and cached Studio UI when the target version differs. `upgrade --check` compares the project dependency with the version embedded in the running binary. It does not check GitHub for the latest release. `--to` must match that binary; it does not download another release.
 
 Apply the updated metadata before starting the project:
 
