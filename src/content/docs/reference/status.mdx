@@ -3,7 +3,7 @@ title: Framework status
 description: The verified release baseline and the boundary between implemented and planned features.
 ---
 
-The current release is **[Dygo v0.0.7](https://github.com/hapyco/dygo/releases/tag/v0.0.7)**, published October 2, 2026. These guides combine the v0.0.6 source audit with the verified v0.0.7 release changes described below. Dygo is in early development; APIs, commands, metadata, and operating procedures can change before a stable release.
+The current release is **[Dygo v0.0.8](https://github.com/hapyco/dygo/releases/tag/v0.0.8)**, published October 2, 2026. These guides combine the v0.0.6 source audit with the verified v0.0.7 and v0.0.8 release changes described below. Dygo is in early development; APIs, commands, metadata, and operating procedures can change before a stable release.
 
 ## Available in the verified release
 
@@ -34,7 +34,7 @@ A generic Record screen for a Job Execution is distinct from a dedicated Job ope
 
 ## Known limitations in the audited baseline
 
-These follow-ups remain open after v0.0.7. Their presence in the UI or SDK is not a guarantee that the affected workflow succeeds. Follow the issue and release notes for a verified fix.
+These follow-ups remain open after v0.0.8. Their presence in the UI or SDK is not a guarantee that the affected workflow succeeds. Follow the issue and release notes for a verified fix.
 
 | Area | Tracked limitation |
 | --- | --- |
@@ -42,7 +42,19 @@ These follow-ups remain open after v0.0.7. Their presence in the UI or SDK is no
 | Attachments | Required attachments cannot complete new Record creation ([#291](https://github.com/hapyco/dygo/issues/291)). |
 | Access edge cases | System-ID and fetched-Field permission predicates can reject otherwise valid updates ([#296](https://github.com/hapyco/dygo/issues/296), [#297](https://github.com/hapyco/dygo/issues/297)). No permission bypass was demonstrated in these findings. |
 | Process lifecycle | Git transport descendants and pending confirmation reads need further cancellation handling ([#298](https://github.com/hapyco/dygo/issues/298), [#299](https://github.com/hapyco/dygo/issues/299)). |
+| Protected naming defaults | Format-naming inputs remain explicit. A defaulted naming token with a Field write restriction still needs a separate naming-default contract ([#304 disposition](https://github.com/hapyco/dygo/issues/304#issuecomment-5945630164)). |
 | App Pages | Bundled Vue Pages work, but independently packaged renderer discovery and a versioned extension workflow remain open ([#265](https://github.com/hapyco/dygo/issues/265)). |
+
+## Released in v0.0.8
+
+[Dygo v0.0.8](https://github.com/hapyco/dygo/releases/tag/v0.0.8) contains four fixes from [PR #305](https://github.com/hapyco/dygo/pull/305):
+
+- Installer cancellation interrupts and reaps the active download child.
+- A fatal Worker error cancels sibling queues before bounded cleanup.
+- Studio retains committed Record creation after failed navigation. A navigation retry does not submit the create again.
+- Studio omits untouched database-backed defaults from new forms. Explicit edits retain Field write restrictions. Scoped create authorization checks the exact PostgreSQL defaults.
+
+Defaulted format-naming inputs and collection payloads remain explicit. Before-create Hooks receive submitted input; omitted defaults are absent from that input and PostgreSQL supplies them at insertion. The protected naming-default limitation above remains open. Update the CLI and project with the [installation procedure](/start-here/installation/#update-an-existing-project).
 
 ## Released in v0.0.7
 
@@ -56,4 +68,6 @@ The original v0.0.6 documentation audit compared the release source with framewo
 
 The v0.0.7 release validation passed 1,236 Go tests with PostgreSQL 17, `go vet`, focused race tests, 110 Studio tests, and embedded builds. After publication, Linux AMD64 fresh installation and a public v0.0.6-to-v0.0.7 CLI/project upgrade passed, including real module resolution, runner builds, database preparation and migration, preserved test data, health checks, and Studio assets. Native installer checks also covered macOS ARM64 and Windows AMD64 with PowerShell 5.1 and 7. Linux ARM64, macOS AMD64, and Windows ARM64 were cross-built and inspected, but not executed natively. See the release notes for the complete evidence and remaining follow-ups.
 
-Versioned source links elsewhere in these guides retain the original v0.0.6 audit references; they are not claims that every API was independently re-audited at v0.0.7.
+The release team verified v0.0.8 with 1,260 Go tests using PostgreSQL and 114 Studio tests. Public fresh installation and an actual v0.0.7-to-v0.0.8 project upgrade passed. Native coverage included Linux AMD64, macOS ARM64, and Windows AMD64; the other published architectures were cross-built. This evidence is separate from the original documentation audit.
+
+Versioned source links elsewhere in these guides retain the original v0.0.6 audit references; they are not claims that every API was independently re-audited at v0.0.7 or v0.0.8.

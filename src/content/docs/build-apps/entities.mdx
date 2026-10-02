@@ -212,4 +212,6 @@ tabs:
 
 Each tab needs a label, unique kebab-case name, and non-empty Fields. `column` and `section` are layout markers, not database Fields. A section needs a label. Storage Field names stay unique across all tabs; API, constraints, and access rules use those same keys.
 
+In v0.0.8, Studio omits untouched database-backed defaults from new forms. Explicit edits still require Field write permission. Defaulted format-naming inputs remain explicit; a protected naming token has a [known limitation](/reference/status/#known-limitations-in-the-audited-baseline). Before-create Hooks receive submitted input, without omitted defaults; PostgreSQL applies those defaults at insertion.
+
 For defaults, checks, Link filters, fetch rules, collection conventions, and complete metadata examples, consult the [versioned Entity contract](https://github.com/hapyco/dygo/blob/v0.0.6/docs/entity-metadata.md).
