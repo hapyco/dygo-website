@@ -12,17 +12,7 @@
   "markdown": {
     "expressiveCode": {}
   },
-  "siteNav": [
-    {
-      "label": "Documentation",
-      "href": "/start-here/quickstart/"
-    },
-    {
-      "label": "Framework",
-      "href": "https://github.com/hapyco/dygo",
-      "external": true
-    }
-  ],
+  "siteNav": [],
   "socials": [
     {
       "label": "GitHub",
@@ -34,21 +24,16 @@
   "themeModeControl": "segmented-control",
   "docsNav": [
     {
-      "label": "Start here",
+      "label": "Documentation",
       "items": [
         {
-          "label": "Guides",
+          "label": "Start here",
           "items": [
             "start-here/quickstart",
             "start-here/installation",
             "start-here/core-concepts"
           ]
-        }
-      ]
-    },
-    {
-      "label": "Build apps",
-      "items": [
+        },
         {
           "label": "Build apps",
           "items": [
@@ -60,12 +45,7 @@
             "build-apps/actions-and-pages",
             "build-apps/patches"
           ]
-        }
-      ]
-    },
-    {
-      "label": "Run Dygo",
-      "items": [
+        },
         {
           "label": "Run Dygo",
           "items": [
@@ -76,24 +56,14 @@
             "run/logs-and-notifications",
             "run/troubleshooting"
           ]
-        }
-      ]
-    },
-    {
-      "label": "Background work",
-      "items": [
+        },
         {
           "label": "Background work",
           "items": [
             "background/jobs-and-workers",
             "background/schedules"
           ]
-        }
-      ]
-    },
-    {
-      "label": "Reference",
-      "items": [
+        },
         {
           "label": "Reference",
           "items": [
@@ -103,12 +73,7 @@
             "reference/project-structure",
             "reference/status"
           ]
-        }
-      ]
-    },
-    {
-      "label": "Principles",
-      "items": [
+        },
         {
           "label": "Principles",
           "items": [
@@ -129,23 +94,6 @@
   "footer": {
     "copyright": "\u00a9 2026 Dygo. Structure for business software.",
     "sections": [
-      {
-        "title": "Documentation",
-        "links": [
-          {
-            "label": "Quickstart",
-            "href": "/start-here/quickstart/"
-          },
-          {
-            "label": "Installation",
-            "href": "/start-here/installation/"
-          },
-          {
-            "label": "Reference",
-            "href": "/reference/cli/"
-          }
-        ]
-      },
       {
         "title": "Project",
         "links": [
