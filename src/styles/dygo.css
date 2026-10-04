@@ -134,3 +134,17 @@ main:has(.dygo-home) > section:nth-child(2) { max-width: 76rem; padding-top: 0; 
 [data-search-trigger].xl\:flex::after { content: "⌘ / Ctrl K"; font-size: .65rem; white-space: nowrap; opacity: .8; }
 .prose .expressive-code .frame.is-terminal .header::before { display: none; }
 .prose .expressive-code .frame.is-terminal .header { justify-content: flex-start; padding-inline-start: var(--ec-uiPadInl); }
+
+/* One complete documentation sidebar replaces Lotus section navigation. */
+nav[aria-label='Documentation sections'],
+[data-section-switch],
+.lotus-mobile-sidebar-panel > div:has(> [data-section-switch]) {
+  display: none;
+}
+[data-sidebar-scroll-area] section + section {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+}
+@media (min-width: 1024px) {
+  :root { --lotus-docs-chrome-height: var(--lotus-header-height); }
+}
