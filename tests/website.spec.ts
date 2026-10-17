@@ -39,10 +39,12 @@ test('every documentation route has working local links and anchors', async ({ p
 
 test('every page fits a narrow mobile viewport in both themes', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/');
   for (const mode of ['light', 'dark']) {
-    await page.addInitScript((theme) => localStorage.setItem('lotus-theme', theme), mode);
+    await page.evaluate((theme) => localStorage.setItem('lotus-theme', theme), mode);
     for (const route of routes) {
       await page.goto(route);
+      await expect(page.locator('html')).toHaveAttribute('data-theme', mode);
       await noPageOverflow(page);
     }
   }
@@ -57,9 +59,10 @@ test('theme switching persists, keyboard focus is visible, and pages meet WCAG A
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme.toLowerCase());
   }
   for (const theme of ['light', 'dark']) {
-    await page.addInitScript((mode) => localStorage.setItem('lotus-theme', mode), theme);
+    await page.evaluate((mode) => localStorage.setItem('lotus-theme', mode), theme);
     for (const route of ['/', '/start-here/quickstart/', '/reference/cli/', '/reference/record-api/']) {
       await page.goto(route);
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
       expect(results.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })), `${theme} ${route}`).toEqual([]);
     }
@@ -174,7 +177,7 @@ test('mobile drawer exposes every group without a section switch and traps keybo
   await expect(drawer).not.toBeVisible();
   await expect(trigger).toBeFocused();
   await trigger.click();
-  await page.mouse.click(385, 400);
+  await drawer.locator('.lotus-mobile-sidebar-backdrop').click({ position: { x: 385, y: 400 } });
   await expect(drawer).not.toBeVisible();
   await trigger.click();
   await drawer.getByRole('link', { name: 'CLI reference', exact: true }).click();
